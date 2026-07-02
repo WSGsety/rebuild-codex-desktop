@@ -1,0 +1,6 @@
+dist/
+dist-test/
+*.whl
+*.zip
+*.sha256
+__pycache__/
