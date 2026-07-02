@@ -1,38 +1,57 @@
 # rebuild-codex-desktop
 
-把 Microsoft Store 里的 Codex Desktop App 重新打包成 Windows x64 免安装 zip。
+把 Codex Desktop App 重新打包成 Windows x64 免安装 zip。
 
-这个仓库的目标是生成类似 `Codex-win-x64-26.x.x.zip` 的桌面版应用包：解压后运行 `Codex.exe`，不需要在本机打开 Microsoft Store 安装。
+这个仓库做的是 **Codex Desktop App**，不是 Codex CLI。产物解压后运行 `Codex.exe`，不用在本机打开 Microsoft Store 安装。
 
-## 它做什么
+## 当前产物
 
-1. 从 Microsoft Store 下载 Codex Desktop 的 MSIX 包。
-2. 解包出 Electron 应用内容。
-3. Patch `app.asar`，替换/修正运行时内容。
-4. 重新打包成 Windows x64 zip。
-5. 定时检查上游版本，有新版本就自动发布到本仓库 Release。
+最新版本在 GitHub Releases：
 
-## 自动发布
+```text
+Codex-win-x64-<version>.zip
+SHA256SUMS.txt
+```
 
-GitHub Actions 每 6 小时运行一次：
+下载后解压，运行目录里的 `Codex.exe`。
+
+## 工作方式
+
+自动流程在：
 
 ```text
 .github/workflows/sync.yml
 ```
 
-它会创建这样的 Release：
+它会：
 
-```text
-v26.x.x
-  Codex-win-x64-26.x.x.zip
-  SHA256SUMS.txt
-```
+1. 检查 Codex Desktop 当前版本。
+2. 从 Microsoft Store 下载 Windows x64 MSIX 包。
+3. 解包 Electron 应用。
+4. Patch `app.asar`。
+5. 重新打包成 `Codex-win-x64-<version>.zip`。
+6. 上传到本仓库 Release。
 
-也可以在 GitHub Actions 页面手动触发 `Build Codex Desktop for Windows`。
+默认每 6 小时检查一次。也可以在 GitHub Actions 里手动运行 `Build Codex Desktop for Windows`。
+
+如果对应版本的 Release 已经存在，workflow 会跳过下载、patch 和打包。
+
+## 费用说明
+
+如果仓库是 public，标准 GitHub-hosted Actions 通常免费。
+
+如果仓库是 private，会消耗 GitHub Actions 免费额度。当前完整构建一次大约 5-6 分钟；没有新版本时会更快，因为会跳过打包。
+
+不想消耗太多额度，可以把定时频率从每 6 小时改成每天一次，或者把仓库改成 public。
 
 ## 本地构建
 
-需要 Node.js 24 和 7-Zip。
+需要：
+
+- Node.js 24
+- 7-Zip
+
+命令：
 
 ```bash
 npm ci
@@ -47,9 +66,17 @@ npm run build:win-x64
 out/Codex-win-x64-<version>.zip
 ```
 
+## 注意事项
+
+这是非官方重打包，不是 OpenAI 官方发布的免安装包。
+
+它仍然依赖 Microsoft Store 的下载接口，只是让 GitHub Actions 去下载和重打包，不需要你在自己的 Windows 机器上打开 Microsoft Store。
+
+当前只构建 Windows x64，不构建 macOS、Linux 或 Windows arm64。
+
 ## 来源
 
-这个仓库基于 [Haleclipse/CodexDesktop-Rebuild](https://github.com/Haleclipse/CodexDesktop-Rebuild) 的公开重打包流程整理，并收窄为 Windows Desktop App 构建。
+重打包流程基于 [Haleclipse/CodexDesktop-Rebuild](https://github.com/Haleclipse/CodexDesktop-Rebuild) 整理，并收窄为 Windows x64 Desktop App 构建。
 
 OpenAI Codex 原始项目：[openai/codex](https://github.com/openai/codex)
 
