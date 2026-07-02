@@ -45,13 +45,15 @@ jobs:
         shell: bash
         run: |
           RESULT=$(node scripts/check-update.js --json --force)
-          VERSION=$(echo "$RESULT" | node -e "let d='';process.stdin.on('data',c=>d+=c);process.stdin.on('end',()=>{const j=JSON.parse(d);console.log(j.platforms?.Windows?.version||'')})")
-          if [ -z "$VERSION" ]; then
-            echo "No Windows version detected"
+          APP_VERSION=$(echo "$RESULT" | node -e "let d='';process.stdin.on('data',c=>d+=c);process.stdin.on('end',()=>{const j=JSON.parse(d);console.log(j.platforms?.['macOS-arm64']?.version||j.platforms?.Windows?.version||'')})")
+          WIN_VERSION=$(echo "$RESULT" | node -e "let d='';process.stdin.on('data',c=>d+=c);process.stdin.on('end',()=>{const j=JSON.parse(d);console.log(j.platforms?.Windows?.version||'')})")
+          if [ -z "$APP_VERSION" ] || [ -z "$WIN_VERSION" ]; then
+            echo "No Codex Desktop version detected"
             exit 1
           fi
-          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
-          echo "tag=v$VERSION" >> "$GITHUB_OUTPUT"
+          echo "app_version=$APP_VERSION" >> "$GITHUB_OUTPUT"
+          echo "win_version=$WIN_VERSION" >> "$GITHUB_OUTPUT"
+          echo "tag=v$APP_VERSION" >> "$GITHUB_OUTPUT"
 
       - name: Check existing release
         id: existing
@@ -94,12 +96,13 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
           TAG: ${{ steps.version.outputs.tag }}
-          VERSION: ${{ steps.version.outputs.version }}
+          APP_VERSION: ${{ steps.version.outputs.app_version }}
+          WIN_VERSION: ${{ steps.version.outputs.win_version }}
         run: |
           if gh release view "$TAG" >/dev/null 2>&1; then
             gh release upload "$TAG" out/*.zip out/SHA256SUMS.txt --clobber
           else
             gh release create "$TAG" out/*.zip out/SHA256SUMS.txt \
-              --title "Codex Desktop $VERSION" \
-              --notes "Rebuilt from the Microsoft Store Codex Desktop package. This is a Windows x64 Codex Desktop App zip."
+              --title "Codex Desktop $APP_VERSION" \
+              --notes "Rebuilt from the Microsoft Store Codex Desktop package $WIN_VERSION. This is a Windows x64 Codex Desktop App zip."
           fi
