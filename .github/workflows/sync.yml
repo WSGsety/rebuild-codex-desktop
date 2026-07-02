@@ -1,0 +1,105 @@
+name: Build Codex Desktop for Windows
+
+on:
+  schedule:
+    - cron: "17 */6 * * *"
+  workflow_dispatch:
+    inputs:
+      force:
+        description: "Force build even when the release already exists"
+        type: boolean
+        default: false
+
+permissions:
+  contents: write
+
+env:
+  NODE_VERSION: "24"
+
+jobs:
+  build-windows:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install 7-Zip
+        run: choco install 7zip -y
+
+      - name: Add 7zz alias
+        run: |
+          Copy-Item "C:\Program Files\7-Zip\7z.exe" "C:\Program Files\7-Zip\7zz.exe"
+          echo "C:\Program Files\7-Zip" | Out-File -Append -Encoding utf8 $env:GITHUB_PATH
+
+      - name: Read upstream version
+        id: version
+        shell: bash
+        run: |
+          RESULT=$(node scripts/check-update.js --json --force)
+          VERSION=$(echo "$RESULT" | node -e "let d='';process.stdin.on('data',c=>d+=c);process.stdin.on('end',()=>{const j=JSON.parse(d);console.log(j.platforms?.Windows?.version||'')})")
+          if [ -z "$VERSION" ]; then
+            echo "No Windows version detected"
+            exit 1
+          fi
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "tag=v$VERSION" >> "$GITHUB_OUTPUT"
+
+      - name: Check existing release
+        id: existing
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ steps.version.outputs.tag }}
+          FORCE: ${{ inputs.force }}
+        run: |
+          if [ "$FORCE" = "true" ]; then
+            echo "skip=false" >> "$GITHUB_OUTPUT"
+          elif gh release view "$TAG" >/dev/null 2>&1; then
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "skip=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Sync upstream Windows app
+        if: steps.existing.outputs.skip == 'false'
+        run: node scripts/sync-upstream.js --force --skip-mac
+
+      - name: Patch app
+        if: steps.existing.outputs.skip == 'false'
+        run: node scripts/patch-all.js win
+
+      - name: Build Windows zip
+        if: steps.existing.outputs.skip == 'false'
+        run: npm run build:win-x64
+
+      - name: Create checksums
+        if: steps.existing.outputs.skip == 'false'
+        shell: bash
+        run: |
+          cd out
+          sha256sum *.zip > SHA256SUMS.txt
+
+      - name: Publish release
+        if: steps.existing.outputs.skip == 'false'
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ steps.version.outputs.tag }}
+          VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          if gh release view "$TAG" >/dev/null 2>&1; then
+            gh release upload "$TAG" out/*.zip out/SHA256SUMS.txt --clobber
+          else
+            gh release create "$TAG" out/*.zip out/SHA256SUMS.txt \
+              --title "Codex Desktop $VERSION" \
+              --notes "Rebuilt from the Microsoft Store Codex Desktop package. This is a Windows x64 Codex Desktop App zip."
+          fi
