@@ -12,7 +12,10 @@
  */
 const fs = require("fs");
 const path = require("path");
-const { execSync } = require("child_process");
+const crypto = require("crypto");
+const os = require("os");
+const { execFileSync, execSync } = require("child_process");
+const { XMLParser } = require("fast-xml-parser");
 
 const PROJECT_ROOT = path.resolve(__dirname, "..");
 const SRC_DIR = path.join(PROJECT_ROOT, "src");
@@ -23,6 +26,13 @@ const TARGET_TRIPLE_MAP = {
   "mac-x64": "x86_64-apple-darwin",
   "win": "x86_64-pc-windows-msvc",
 };
+
+const WINDOWS_CODEX_FILES = [
+  { source: ["bin", "codex.exe"], destination: "codex.exe" },
+  { source: ["bin", "codex-code-mode-host.exe"], destination: "codex-code-mode-host.exe" },
+  { source: ["codex-resources", "codex-command-runner.exe"], destination: "codex-command-runner.exe" },
+  { source: ["codex-resources", "codex-windows-sandbox-setup.exe"], destination: "codex-windows-sandbox-setup.exe" },
+];
 
 // ─── Helpers ────────────────────────────────────────────────────
 
@@ -47,6 +57,185 @@ function copyRecursive(src, dest) {
     }
   }
   return count;
+}
+
+function parseWindowsApplicationExecutable(manifest) {
+  const parsed = new XMLParser({
+    ignoreAttributes: false,
+    attributeNamePrefix: "",
+    removeNSPrefix: true,
+  }).parse(manifest);
+  const applications = parsed.Package?.Applications?.Application;
+  const candidates = (Array.isArray(applications) ? applications : [applications])
+    .filter((application) => application && typeof application.Executable === "string")
+    .filter((application) => /\.exe$/i.test(application.Executable));
+  const fullTrust = candidates.filter((application) => application.EntryPoint === "Windows.FullTrustApplication");
+  const matches = fullTrust.length > 0 ? fullTrust : candidates;
+
+  if (matches.length !== 1) {
+    throw new Error(`Expected one Windows application executable, found ${matches.length}`);
+  }
+  return matches[0].Executable;
+}
+
+function getWindowsEntryRelativePath(extractDir, appDir) {
+  const manifestPath = path.join(extractDir, "AppxManifest.xml");
+  const manifest = fs.readFileSync(manifestPath, "utf-8");
+  const executable = parseWindowsApplicationExecutable(manifest);
+
+  const executablePath = path.resolve(extractDir, ...executable.split(/[\\/]/));
+  const relativePath = path.relative(appDir, executablePath);
+  if (!relativePath || relativePath.startsWith("..") || path.isAbsolute(relativePath)) {
+    throw new Error(`Windows application executable is outside app/: ${executable}`);
+  }
+  if (!fs.existsSync(executablePath)) {
+    throw new Error(`Windows application executable is missing: ${executable}`);
+  }
+  return relativePath;
+}
+
+function writeWindowsLauncher(outApp, entryRelativePath) {
+  const windowsPath = entryRelativePath.split(path.sep).join("\\");
+  const launcher = `@echo off\r\nstart "" "%~dp0${windowsPath}" "codex://launch"\r\n`;
+  fs.writeFileSync(path.join(outApp, "启动 Codex.cmd"), launcher);
+  console.log(`   [entry] 启动 Codex.cmd -> ${entryRelativePath}`);
+}
+
+function resolveWindowsCodexVersion() {
+  const configured = process.env.CODEX_CLI_VERSION?.trim();
+  const npmCommand = process.platform === "win32" ? "npm.cmd" : "npm";
+  const version = configured || execFileSync(npmCommand, ["view", "@openai/codex", "version"], {
+    encoding: "utf-8",
+    stdio: ["ignore", "pipe", "pipe"],
+  }).trim();
+  if (!/^\d+\.\d+\.\d+(?:[-+][0-9A-Za-z.-]+)?$/.test(version)) {
+    throw new Error(`Invalid Codex CLI version: ${version || "empty"}`);
+  }
+  return version;
+}
+
+function assertWindowsX64Executable(filePath) {
+  const buffer = fs.readFileSync(filePath);
+  if (buffer.length < 0x40 || buffer.toString("ascii", 0, 2) !== "MZ") {
+    throw new Error(`Not a Windows executable: ${filePath}`);
+  }
+  const peOffset = buffer.readUInt32LE(0x3c);
+  if (peOffset + 6 > buffer.length || buffer.readUInt32LE(peOffset) !== 0x00004550) {
+    throw new Error(`Invalid PE header: ${filePath}`);
+  }
+  const machine = buffer.readUInt16LE(peOffset + 4);
+  if (machine !== 0x8664) {
+    throw new Error(`Expected Windows x64 executable, found PE machine 0x${machine.toString(16)}: ${filePath}`);
+  }
+}
+
+function sha256File(filePath) {
+  return crypto.createHash("sha256").update(fs.readFileSync(filePath)).digest("hex");
+}
+
+function resolveWindowsCodexBundle() {
+  const version = resolveWindowsCodexVersion();
+  const packageSpec = `@openai/codex@${version}-win32-x64`;
+  const npmCommand = process.platform === "win32" ? "npm.cmd" : "npm";
+  const tempDir = path.join(os.tmpdir(), "openai-codex-pack", `${version}-win32-x64`);
+  clearDir(tempDir);
+
+  console.log(`   [codex] fetching ${packageSpec}`);
+  const packed = JSON.parse(execFileSync(npmCommand, ["pack", packageSpec, "--pack-destination", tempDir, "--json"], {
+    cwd: tempDir,
+    encoding: "utf-8",
+    stdio: ["ignore", "pipe", "pipe"],
+  }));
+  const packageInfo = packed[0];
+  if (!packageInfo?.filename || !packageInfo.integrity) {
+    throw new Error(`npm pack returned incomplete metadata for ${packageSpec}`);
+  }
+
+  const extractDir = path.join(tempDir, "extracted");
+  fs.mkdirSync(extractDir, { recursive: true });
+  execFileSync("tar", ["xzf", path.join(tempDir, packageInfo.filename), "-C", extractDir], { stdio: "pipe" });
+
+  const vendorDir = path.join(extractDir, "package", "vendor", TARGET_TRIPLE_MAP.win);
+  const packageMetadata = JSON.parse(fs.readFileSync(path.join(vendorDir, "codex-package.json"), "utf-8"));
+  const expectedMetadata = {
+    layoutVersion: 1,
+    version,
+    target: TARGET_TRIPLE_MAP.win,
+    variant: "codex",
+    entrypoint: "bin/codex.exe",
+    resourcesDir: "codex-resources",
+    pathDir: "codex-path",
+  };
+  for (const [key, expected] of Object.entries(expectedMetadata)) {
+    if (packageMetadata[key] !== expected) {
+      throw new Error(`Unexpected Codex package metadata ${key}: ${packageMetadata[key]}`);
+    }
+  }
+  const files = WINDOWS_CODEX_FILES.map(({ source, destination }) => {
+    const sourcePath = path.join(vendorDir, ...source);
+    if (!fs.existsSync(sourcePath)) {
+      throw new Error(`Official Codex package is missing ${source.join("/")}`);
+    }
+    assertWindowsX64Executable(sourcePath);
+    return { sourcePath, destination };
+  });
+
+  return { version, integrity: packageInfo.integrity, files };
+}
+
+function replaceWindowsCodexBundle(resourcesDir) {
+  const existingCodex = path.join(resourcesDir, "codex.exe");
+  if (!fs.existsSync(existingCodex)) {
+    throw new Error(`Upstream Codex executable is missing: ${existingCodex}`);
+  }
+
+  const bundle = resolveWindowsCodexBundle();
+  const hashes = {};
+  for (const { sourcePath, destination } of bundle.files) {
+    const destinationPath = path.join(resourcesDir, destination);
+    fs.copyFileSync(sourcePath, destinationPath);
+    assertWindowsX64Executable(destinationPath);
+    const sourceHash = sha256File(sourcePath);
+    const destinationHash = sha256File(destinationPath);
+    if (sourceHash !== destinationHash) {
+      throw new Error(`Codex bundle copy verification failed: ${destination}`);
+    }
+    hashes[destination] = destinationHash;
+  }
+
+  if (process.platform === "win32") {
+    const versionOutput = execFileSync(existingCodex, ["--version"], {
+      encoding: "utf-8",
+      stdio: ["ignore", "pipe", "pipe"],
+      timeout: 30000,
+    }).trim();
+    if (!versionOutput.includes(bundle.version)) {
+      throw new Error(`Codex CLI version mismatch: ${versionOutput}`);
+    }
+    execFileSync(existingCodex, ["app-server", "--help"], {
+      stdio: ["ignore", "pipe", "pipe"],
+      timeout: 30000,
+    });
+  }
+
+  console.log(`   [codex] replaced with @openai/codex ${bundle.version} (${bundle.files.length} executables)`);
+  return { version: bundle.version, integrity: bundle.integrity, hashes };
+}
+
+function getWindowsPackageVersion() {
+  const configured = process.env.CODEX_WINDOWS_PACKAGE_VERSION?.trim();
+  const versions = configured
+    ? { win: { version: configured } }
+    : JSON.parse(fs.readFileSync(path.join(__dirname, ".versions.json"), "utf-8"));
+  const version = versions.win?.version;
+  if (!/^\d+(?:\.\d+){2,3}$/.test(version || "")) {
+    throw new Error(`Invalid Windows MSIX package version: ${version || "empty"}`);
+  }
+  return version;
+}
+
+function createWindowsZipName(appVersion, codexCliVersion) {
+  return `Codex-win-x64-${appVersion}-cli-${codexCliVersion}.zip`;
 }
 
 function resolveCodexVendor(platform) {
@@ -203,6 +392,8 @@ function buildWin(platform) {
     console.error(`[x] MSIX extract not found. Run sync-upstream first.`);
     process.exit(1);
   }
+  const entryRelativePath = getWindowsEntryRelativePath(extractDir, appDir);
+  console.log(`   [entry] ${entryRelativePath}`);
 
   // Copy app/ to output
   const outAppDir = path.join(OUT_DIR, "win");
@@ -211,7 +402,10 @@ function buildWin(platform) {
   console.log("   [copy] MSIX app/ -> out/");
   copyRecursive(appDir, outApp);
 
-  const resourcesDir = path.join(outApp, "resources");
+  const resourcesDir = path.join(outApp, path.dirname(entryRelativePath), "resources");
+  if (!fs.existsSync(resourcesDir)) {
+    throw new Error(`Windows resources directory is missing: ${resourcesDir}`);
+  }
 
   // Compute old ASAR header hash (before repack)
   const asarPath = path.join(resourcesDir, "app.asar");
@@ -227,22 +421,37 @@ function buildWin(platform) {
   console.log(`   [integrity] new hash: ${newHash.slice(0, 16)}...`);
 
   if (oldHash !== newHash) {
-    // Find Codex.exe in app root
-    const exePath = path.join(outApp, "Codex.exe");
-    if (fs.existsSync(exePath)) {
-      patchExeHash(exePath, oldHash, newHash);
-    } else {
-      console.log("   [!] Codex.exe not found for hash patching");
+    const exePath = path.join(outApp, entryRelativePath);
+    const patched = patchExeHash(exePath, oldHash, newHash);
+    const isOwlHost = fs.existsSync(path.join(outApp, "owl-shell-runtime.json")) &&
+      fs.existsSync(path.join(resourcesDir, "owl-electron-app.json"));
+    if (!patched && !isOwlHost) {
+      throw new Error(`ASAR integrity hash not found in ${entryRelativePath}`);
+    }
+    if (!patched) {
+      console.log(`   [integrity] ${entryRelativePath} uses Owl runtime; no embedded ASAR hash`);
     }
   }
 
-  // Replace codex CLI
-  replaceCodex(platform, resourcesDir, "codex.exe");
+  // Replace Codex CLI and its matching Windows helpers.
+  const codexBundle = replaceWindowsCodexBundle(resourcesDir);
+  writeWindowsLauncher(outApp, entryRelativePath);
 
   // Create ZIP
-  const version = getVersion(asarDir);
-  const zipName = `Codex-win-x64-${version}.zip`;
+  const appVersion = getVersion(asarDir);
+  const windowsPackageVersion = getWindowsPackageVersion();
+  const zipName = createWindowsZipName(appVersion, codexBundle.version);
   const zipPath = path.join(OUT_DIR, zipName);
+  fs.writeFileSync(path.join(outApp, "build-info.json"), JSON.stringify({
+    appVersion,
+    windowsPackageVersion,
+    entryExecutable: entryRelativePath.split(path.sep).join("/"),
+    hostExecutableSha256: sha256File(path.join(outApp, entryRelativePath)),
+    codexCliVersion: codexBundle.version,
+    codexPackageIntegrity: codexBundle.integrity,
+    codexExecutableSha256: codexBundle.hashes,
+  }, null, 2) + "\n");
+  fs.rmSync(zipPath, { force: true });
   console.log(`   [zip] ${zipName}`);
   execSync(`7zz a -tzip -mx=5 "${zipPath}" .`, { cwd: outApp });
 
@@ -253,7 +462,6 @@ function buildWin(platform) {
 // ─── ASAR integrity ─────────────────────────────────────────────
 
 function computeAsarHeaderHash(asarPath) {
-  const crypto = require("crypto");
   const buf = fs.readFileSync(asarPath);
   const headerSize = buf.readUInt32LE(12);
   const header = buf.slice(16, 16 + headerSize);
@@ -265,12 +473,12 @@ function patchExeHash(exePath, oldHash, newHash) {
   const oldBuf = Buffer.from(oldHash, "ascii");
   const idx = buf.indexOf(oldBuf);
   if (idx < 0) {
-    console.log("   [!] old hash not found in exe");
-    return;
+    return false;
   }
   Buffer.from(newHash, "ascii").copy(buf, idx);
   fs.writeFileSync(exePath, buf);
   console.log(`   [integrity] exe hash patched at offset ${idx}`);
+  return true;
 }
 
 function updateAsarIntegrity(asarPath, infoPlistPath) {
@@ -332,4 +540,11 @@ function main() {
   }
 }
 
-main();
+if (require.main === module) main();
+
+module.exports = {
+  WINDOWS_CODEX_FILES,
+  createWindowsZipName,
+  parseWindowsApplicationExecutable,
+  writeWindowsLauncher,
+};

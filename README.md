@@ -2,18 +2,18 @@
 
 把 Codex Desktop App 重新打包成 Windows x64 免安装 zip。
 
-这个仓库做的是 **Codex Desktop App**，不是 Codex CLI。产物解压后运行 `Codex.exe`，不用在本机打开 Microsoft Store 安装。
+这个仓库做的是 **Codex Desktop App**，不是单独的 Codex CLI。新版使用 ChatGPT 桌面宿主，产物解压后运行 `启动 Codex.cmd` 即可进入 Codex。
 
 ## 当前产物
 
 最新版本在 GitHub Releases：
 
 ```text
-Codex-win-x64-<version>.zip
+Codex-win-x64-<App版本>-cli-<CLI版本>.zip
 SHA256SUMS.txt
 ```
 
-下载后解压，运行目录里的 `Codex.exe`。
+下载后解压，运行目录里的 `启动 Codex.cmd`。实际桌面宿主由 Microsoft Store 包的 `AppxManifest.xml` 决定，当前新版为 `ChatGPT.exe`。
 
 ## 工作方式
 
@@ -29,12 +29,13 @@ SHA256SUMS.txt
 2. 从 Microsoft Store 下载 Windows x64 MSIX 包。
 3. 解包 Electron 应用。
 4. Patch `app.asar`。
-5. 重新打包成 `Codex-win-x64-<version>.zip`。
-6. 上传到本仓库 Release。
+5. 用同一版本的官方 `@openai/codex` 替换 `codex.exe` 和三个 Windows 配套程序。
+6. 重新打包成同时标明 App 和 CLI 版本的 zip。
+7. 上传到本仓库 Release。
 
-默认每 6 小时检查一次。也可以在 GitHub Actions 里手动运行 `Build Codex Desktop for Windows`。
+默认每天北京时间 08:00 检查一次。也可以在 GitHub Actions 里手动运行 `Build Codex Desktop for Windows`。
 
-如果对应版本的 Release 已经存在，workflow 会跳过下载、patch 和打包。
+如果对应的 App 和 Codex CLI 版本组合已经发布，workflow 会跳过 patch 和打包。Windows MSIX 版本会记录在包内的 `build-info.json` 和 Release 说明中。
 
 ## 费用说明
 
@@ -42,7 +43,7 @@ SHA256SUMS.txt
 
 如果仓库是 private，会消耗 GitHub Actions 免费额度。当前完整构建一次大约 5-6 分钟；没有新版本时会更快，因为会跳过打包。
 
-不想消耗太多额度，可以把定时频率从每 6 小时改成每天一次，或者把仓库改成 public。
+不想消耗太多额度，可以改成只手动触发、进一步降低检查频率，或者把仓库改成 public。
 
 ## 本地构建
 
@@ -63,7 +64,7 @@ npm run build:win-x64
 产物在：
 
 ```text
-out/Codex-win-x64-<version>.zip
+out/Codex-win-x64-<App版本>-cli-<CLI版本>.zip
 ```
 
 ## 注意事项
@@ -79,4 +80,3 @@ out/Codex-win-x64-<version>.zip
 重打包流程基于 [Haleclipse/CodexDesktop-Rebuild](https://github.com/Haleclipse/CodexDesktop-Rebuild) 整理，并收窄为 Windows x64 Desktop App 构建。
 
 OpenAI Codex 原始项目：[openai/codex](https://github.com/openai/codex)
-

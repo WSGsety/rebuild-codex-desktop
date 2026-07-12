@@ -25,7 +25,8 @@
     "sync": "node scripts/sync-upstream.js",
     "check-update": "node scripts/check-update.js",
     "bump-version": "node scripts/bump-version.js",
-    "rebuild:native": "electron-rebuild"
+    "rebuild:native": "electron-rebuild",
+    "test": "node --test scripts/build-from-upstream.test.js"
   },
   "devDependencies": {
     "@electron-forge/cli": "^7.10.2",
