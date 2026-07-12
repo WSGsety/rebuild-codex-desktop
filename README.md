@@ -9,7 +9,7 @@
 最新版本在 GitHub Releases：
 
 ```text
-Codex-win-x64-<App版本>-cli-<CLI版本>.zip
+Codex-win-x64-<App版本>.zip
 SHA256SUMS.txt
 ```
 
@@ -30,12 +30,12 @@ SHA256SUMS.txt
 3. 解包 Electron 应用。
 4. Patch `app.asar`。
 5. 用同一版本的官方 `@openai/codex` 替换 `codex.exe` 和三个 Windows 配套程序。
-6. 重新打包成同时标明 App 和 CLI 版本的 zip。
+6. 重新打包成只标明 App 版本的 zip。
 7. 上传到本仓库 Release。
 
 默认每天北京时间 08:00 检查一次。也可以在 GitHub Actions 里手动运行 `Build Codex Desktop for Windows`。
 
-如果对应的 App 和 Codex CLI 版本组合已经发布，workflow 会跳过 patch 和打包。Windows MSIX 版本会记录在包内的 `build-info.json` 和 Release 说明中。
+如果对应的 App 和内置 Codex CLI 版本组合已经发布，workflow 会跳过 patch 和打包。CLI 和 Windows MSIX 版本只用于内部更新判断，并记录在包内的 `build-info.json` 和 Release 说明中。
 
 ## 费用说明
 
@@ -64,7 +64,7 @@ npm run build:win-x64
 产物在：
 
 ```text
-out/Codex-win-x64-<App版本>-cli-<CLI版本>.zip
+out/Codex-win-x64-<App版本>.zip
 ```
 
 ## 注意事项

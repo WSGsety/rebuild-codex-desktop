@@ -6,7 +6,7 @@ on:
   workflow_dispatch:
     inputs:
       force:
-        description: "Deprecated; duplicate App and CLI versions are always skipped"
+        description: "Deprecated; unchanged App and embedded CLI are always skipped"
         type: boolean
         default: false
 
@@ -61,26 +61,32 @@ jobs:
           echo "app_version=$APP_VERSION" >> "$GITHUB_OUTPUT"
           echo "win_package_version=$WIN_PACKAGE_VERSION" >> "$GITHUB_OUTPUT"
           echo "codex_cli_version=$CODEX_CLI_VERSION" >> "$GITHUB_OUTPUT"
-          echo "tag=v$APP_VERSION-cli.$CODEX_CLI_VERSION" >> "$GITHUB_OUTPUT"
-          echo "zip_name=Codex-win-x64-$APP_VERSION-cli-$CODEX_CLI_VERSION.zip" >> "$GITHUB_OUTPUT"
+          echo "tag=v$APP_VERSION" >> "$GITHUB_OUTPUT"
+          echo "zip_name=Codex-win-x64-$APP_VERSION.zip" >> "$GITHUB_OUTPUT"
 
       - name: Check existing app-version release
         id: existing
         shell: bash
         env:
           GH_TOKEN: ${{ github.token }}
+          TAG: ${{ steps.version.outputs.tag }}
+          CODEX_CLI_VERSION: ${{ steps.version.outputs.codex_cli_version }}
           ZIP_NAME: ${{ steps.version.outputs.zip_name }}
         run: |
           EXISTING_RELEASE="$(
             gh api "repos/$GITHUB_REPOSITORY/releases?per_page=100" | node -e '
-              const zip = process.env.ZIP_NAME;
+              const { CODEX_CLI_VERSION: cli, TAG: tag, ZIP_NAME: zip } = process.env;
+              const marker = `<!-- codex-cli-version:${cli} -->`;
               let data = "";
               process.stdin.on("data", (chunk) => data += chunk);
               process.stdin.on("end", () => {
                 const releases = JSON.parse(data);
                 const hit = releases.find((release) => {
                   const assets = new Set((release.assets || []).map((asset) => asset.name));
-                  return assets.has(zip) && assets.has("SHA256SUMS.txt");
+                  return release.tag_name === tag &&
+                    release.body?.includes(marker) &&
+                    assets.has(zip) &&
+                    assets.has("SHA256SUMS.txt");
                 });
                 if (hit) process.stdout.write(hit.tag_name);
               });
@@ -126,12 +132,15 @@ jobs:
           CODEX_CLI_VERSION: ${{ steps.version.outputs.codex_cli_version }}
           ZIP_NAME: ${{ steps.version.outputs.zip_name }}
         run: |
+          RELEASE_NOTES="Rebuilt from Microsoft Store package $WIN_PACKAGE_VERSION with embedded app $APP_VERSION. This is a Windows x64 portable zip."
+          VERIFIED_RELEASE_NOTES="$RELEASE_NOTES <!-- codex-cli-version:$CODEX_CLI_VERSION -->"
           if gh release view "$TAG" >/dev/null 2>&1; then
+            gh release edit "$TAG" --title "Codex Desktop $APP_VERSION" --notes "$RELEASE_NOTES"
             gh release upload "$TAG" "out/$ZIP_NAME" out/SHA256SUMS.txt --clobber
           else
             gh release create "$TAG" "out/$ZIP_NAME" out/SHA256SUMS.txt \
-              --title "Codex Desktop $APP_VERSION + CLI $CODEX_CLI_VERSION" \
-              --notes "Rebuilt from Microsoft Store package $WIN_PACKAGE_VERSION with embedded app $APP_VERSION and official Codex CLI $CODEX_CLI_VERSION. This is a Windows x64 portable zip."
+              --title "Codex Desktop $APP_VERSION" \
+              --notes "$RELEASE_NOTES"
           fi
           gh api "repos/$GITHUB_REPOSITORY/releases/tags/$TAG" | node -e '
             const fs = require("fs");
@@ -148,3 +157,4 @@ jobs:
               }
             });
           '
+          gh release edit "$TAG" --title "Codex Desktop $APP_VERSION" --notes "$VERIFIED_RELEASE_NOTES"

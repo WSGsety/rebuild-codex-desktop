@@ -242,8 +242,8 @@ function getWindowsPackageVersion() {
   return version;
 }
 
-function createWindowsZipName(appVersion, codexCliVersion) {
-  return `Codex-win-x64-${appVersion}-cli-${codexCliVersion}.zip`;
+function createWindowsZipName(appVersion) {
+  return `Codex-win-x64-${appVersion}.zip`;
 }
 
 function resolveCodexVendor(platform) {
@@ -448,7 +448,7 @@ function buildWin(platform) {
   // Create ZIP
   const appVersion = getVersion(asarDir);
   const windowsPackageVersion = getWindowsPackageVersion();
-  const zipName = createWindowsZipName(appVersion, codexBundle.version);
+  const zipName = createWindowsZipName(appVersion);
   const zipPath = path.join(OUT_DIR, zipName);
   fs.writeFileSync(path.join(outApp, "build-info.json"), JSON.stringify({
     appVersion,

@@ -60,16 +60,15 @@ test("拒绝无法确定唯一入口的清单", () => {
   );
 });
 
-test("Windows 产物名同时包含 App 和 CLI 版本", () => {
+test("Windows 产物名只展示 App 版本", () => {
   // Arrange
   const appVersion = "26.707.31428";
-  const codexCliVersion = "0.144.1";
 
   // Act
-  const name = createWindowsZipName(appVersion, codexCliVersion);
+  const name = createWindowsZipName(appVersion);
 
   // Assert
-  assert.equal(name, "Codex-win-x64-26.707.31428-cli-0.144.1.zip");
+  assert.equal(name, "Codex-win-x64-26.707.31428.zip");
 });
 
 test("官方 Windows CLI 包使用完整的四文件映射", () => {
