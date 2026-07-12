@@ -101,10 +101,19 @@ function writeWindowsLauncher(outApp, entryRelativePath) {
   console.log(`   [entry] 启动 Codex.cmd -> ${entryRelativePath}`);
 }
 
+function execNpm(args, options) {
+  if (process.env.npm_execpath) {
+    return execFileSync(process.execPath, [process.env.npm_execpath, ...args], options);
+  }
+  return execFileSync(process.platform === "win32" ? "npm.cmd" : "npm", args, {
+    ...options,
+    shell: process.platform === "win32",
+  });
+}
+
 function resolveWindowsCodexVersion() {
   const configured = process.env.CODEX_CLI_VERSION?.trim();
-  const npmCommand = process.platform === "win32" ? "npm.cmd" : "npm";
-  const version = configured || execFileSync(npmCommand, ["view", "@openai/codex", "version"], {
+  const version = configured || execNpm(["view", "@openai/codex", "version"], {
     encoding: "utf-8",
     stdio: ["ignore", "pipe", "pipe"],
   }).trim();
@@ -136,12 +145,11 @@ function sha256File(filePath) {
 function resolveWindowsCodexBundle() {
   const version = resolveWindowsCodexVersion();
   const packageSpec = `@openai/codex@${version}-win32-x64`;
-  const npmCommand = process.platform === "win32" ? "npm.cmd" : "npm";
   const tempDir = path.join(os.tmpdir(), "openai-codex-pack", `${version}-win32-x64`);
   clearDir(tempDir);
 
   console.log(`   [codex] fetching ${packageSpec}`);
-  const packed = JSON.parse(execFileSync(npmCommand, ["pack", packageSpec, "--pack-destination", tempDir, "--json"], {
+  const packed = JSON.parse(execNpm(["pack", packageSpec, "--pack-destination", tempDir, "--json"], {
     cwd: tempDir,
     encoding: "utf-8",
     stdio: ["ignore", "pipe", "pipe"],
