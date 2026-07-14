@@ -132,14 +132,14 @@ jobs:
           CODEX_CLI_VERSION: ${{ steps.version.outputs.codex_cli_version }}
           ZIP_NAME: ${{ steps.version.outputs.zip_name }}
         run: |
-          RELEASE_NOTES="Rebuilt from Microsoft Store package $WIN_PACKAGE_VERSION with embedded app $APP_VERSION. This is a Windows x64 portable zip."
+          RELEASE_NOTES="基于 Microsoft Store Windows x64 安装包 $WIN_PACKAGE_VERSION 重新打包，App 版本为 $APP_VERSION。下载 ZIP 并解压后，运行“启动 Codex.cmd”即可使用。"
           VERIFIED_RELEASE_NOTES="$RELEASE_NOTES <!-- codex-cli-version:$CODEX_CLI_VERSION -->"
           if gh release view "$TAG" >/dev/null 2>&1; then
-            gh release edit "$TAG" --title "Codex Desktop $APP_VERSION" --notes "$RELEASE_NOTES"
+            gh release edit "$TAG" --title "$TAG" --notes "$RELEASE_NOTES"
             gh release upload "$TAG" "out/$ZIP_NAME" out/SHA256SUMS.txt --clobber
           else
             gh release create "$TAG" "out/$ZIP_NAME" out/SHA256SUMS.txt \
-              --title "Codex Desktop $APP_VERSION" \
+              --title "$TAG" \
               --notes "$RELEASE_NOTES"
           fi
           gh api "repos/$GITHUB_REPOSITORY/releases/tags/$TAG" | node -e '
@@ -157,4 +157,4 @@ jobs:
               }
             });
           '
-          gh release edit "$TAG" --title "Codex Desktop $APP_VERSION" --notes "$VERIFIED_RELEASE_NOTES"
+          gh release edit "$TAG" --title "$TAG" --notes "$VERIFIED_RELEASE_NOTES"

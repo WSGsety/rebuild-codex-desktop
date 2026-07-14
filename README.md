@@ -35,7 +35,7 @@ SHA256SUMS.txt
 
 默认每天北京时间 08:00 检查一次。也可以在 GitHub Actions 里手动运行 `Build Codex Desktop for Windows`。
 
-如果对应的 App 和内置 Codex CLI 版本组合已经发布，workflow 会跳过 patch 和打包。CLI 和 Windows MSIX 版本只用于内部更新判断，并记录在包内的 `build-info.json` 和 Release 说明中。
+如果对应的 App 和内置 Codex CLI 版本组合已经发布，workflow 会跳过 patch 和打包。CLI 版本只用于内部更新判断，并记录在包内的 `build-info.json` 和 Release 内部标记中；Windows MSIX 版本会显示在中文 Release 说明里。
 
 ## 费用说明
 
