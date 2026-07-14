@@ -2,7 +2,7 @@
 
 把 Codex Desktop App 重新打包成 Windows x64 免安装 zip。
 
-这个仓库做的是 **Codex Desktop App**，不是单独的 Codex CLI。新版使用 ChatGPT 桌面宿主，产物解压后运行 `启动 Codex.cmd` 即可进入 Codex。
+这个仓库做的是 **Codex Desktop App**，不是单独的 Codex CLI。新版使用 ChatGPT 桌面宿主，产物解压后运行 `ChatGPT.exe` 即可使用。
 
 ## 当前产物
 
@@ -13,7 +13,7 @@ Codex-win-x64-<App版本>.zip
 SHA256SUMS.txt
 ```
 
-下载后解压，运行目录里的 `启动 Codex.cmd`。实际桌面宿主由 Microsoft Store 包的 `AppxManifest.xml` 决定，当前新版为 `ChatGPT.exe`。
+下载后解压，运行目录里的 `ChatGPT.exe`。实际桌面宿主由 Microsoft Store 包的 `AppxManifest.xml` 决定。
 
 ## 工作方式
 
