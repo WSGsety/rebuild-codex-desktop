@@ -45,6 +45,7 @@ const FORCE = args.includes("--force");
 const CHECK_ONLY = args.includes("--check-only");
 const SKIP_MAC = args.includes("--skip-mac");
 const SKIP_WIN = args.includes("--skip-win");
+const WINDOWS_METADATA_RETRY_DELAYS_MS = [2000, 4000, 8000];
 
 // ─── Helpers ────────────────────────────────────────────────────
 
@@ -59,6 +60,10 @@ function httpGet(url) {
       res.on("end", () => resolve({ status: res.statusCode, body: Buffer.concat(chunks) }));
     }).on("error", reject);
   });
+}
+
+function wait(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
 function curlDownload(url, dest, label) {
@@ -181,18 +186,41 @@ async function getAppcastVersion(url) {
   };
 }
 
-async function getWindowsVersion() {
-  const msstore = require("./fetch-msstore");
-  const cookie = await msstore.getCookie();
-  const info = await msstore.getAppInfo("9plm9xgg6vks", "US");
-  if (!info.categoryId) throw new Error("No CategoryID");
-  const pkgs = await msstore.getFileList(cookie, info.categoryId, "Retail");
-  if (pkgs.length === 0) throw new Error("No packages");
-  const pkg = pkgs.find((p) => /_x64__.*\.msix$/i.test(p.name));
-  if (!pkg) throw new Error("Windows: x64 MSIX package not found");
-  const url = await msstore.getDownloadUrl(pkg.updateID, pkg.revisionNumber, "Retail", pkg.digest);
-  const verMatch = pkg.name.match(/_(\d+\.\d+\.\d+(?:\.\d+)?)_/);
-  return { version: verMatch?.[1] || "unknown", url, packageName: pkg.name };
+async function getWindowsVersion(options = {}) {
+  const msstore = options.msstore || require("./fetch-msstore");
+  const retryDelays = options.retryDelays || WINDOWS_METADATA_RETRY_DELAYS_MS;
+  const waitForRetry = options.wait || wait;
+  const logRetry = options.logRetry || console.warn;
+  const attempts = retryDelays.length + 1;
+  let lastMessage = "unknown error";
+
+  for (let attempt = 1; attempt <= attempts; attempt++) {
+    try {
+      const cookie = await msstore.getCookie();
+      const info = await msstore.getAppInfo("9plm9xgg6vks", "US");
+      if (!info.categoryId) throw new Error("No CategoryID");
+      const pkgs = await msstore.getFileList(cookie, info.categoryId, "Retail");
+      if (pkgs.length === 0) throw new Error("No packages");
+      const pkg = pkgs.find((p) => /_x64__.*\.msix$/i.test(p.name));
+      if (!pkg) throw new Error("Windows: x64 MSIX package not found");
+      const url = await msstore.getDownloadUrl(pkg.updateID, pkg.revisionNumber, "Retail", pkg.digest);
+      if (typeof url !== "string" || !/^https?:\/\//i.test(url)) {
+        throw new Error(`Windows download URL unavailable for ${pkg.name}`);
+      }
+      const verMatch = pkg.name.match(/_(\d+\.\d+\.\d+(?:\.\d+)?)_/);
+      return { version: verMatch?.[1] || "unknown", url, packageName: pkg.name };
+    } catch (error) {
+      lastMessage = error instanceof Error ? error.message : String(error);
+      if (attempt === attempts) break;
+      const retryDelay = retryDelays[attempt - 1];
+      logRetry(
+        `   [retry] Windows metadata attempt ${attempt}/${attempts} failed: ${lastMessage}; retrying in ${retryDelay} ms`
+      );
+      await waitForRetry(retryDelay);
+    }
+  }
+
+  throw new Error(`Windows metadata failed after ${attempts} attempts: ${lastMessage}`);
 }
 
 // ─── Extract macOS ──────────────────────────────────────────────
@@ -394,4 +422,8 @@ async function main() {
   }
 }
 
-main().catch((e) => { console.error(`\n[x] ${e.message}`); process.exit(1); });
+if (require.main === module) {
+  main().catch((e) => { console.error(`\n[x] ${e.message}`); process.exit(1); });
+}
+
+module.exports = { getWindowsVersion };
