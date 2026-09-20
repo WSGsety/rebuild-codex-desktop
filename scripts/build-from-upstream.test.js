@@ -43,6 +43,27 @@ test("兼容只有 Codex.exe 的旧版清单", () => {
   assert.equal(executable, "app/Codex.exe");
 });
 
+test("主入口与无界面辅助程序并存时取 Id=App 的入口", () => {
+  // Arrange — 复刻上游 26.915.4065.0 新增 CodexCoreCommandRunner 后的清单结构
+  const manifest = `
+    <Package>
+      <Applications>
+        <Application Id="App" Executable="app/ChatGPT.exe" EntryPoint="Windows.FullTrustApplication">
+          <uap:VisualElements DisplayName="ChatGPT" />
+        </Application>
+        <Application Id="CodexCoreCommandRunner" Executable="app/resources/codex-command-runner.exe" EntryPoint="Windows.FullTrustApplication">
+          <uap:VisualElements DisplayName="ChatGPT Core command runner" AppListEntry="none" />
+        </Application>
+      </Applications>
+    </Package>`;
+
+  // Act
+  const executable = parseWindowsApplicationExecutable(manifest);
+
+  // Assert
+  assert.equal(executable, "app/ChatGPT.exe");
+});
+
 test("拒绝无法确定唯一入口的清单", () => {
   // Arrange
   const manifest = `

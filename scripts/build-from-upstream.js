@@ -70,10 +70,18 @@ function parseWindowsApplicationExecutable(manifest) {
     .filter((application) => application && typeof application.Executable === "string")
     .filter((application) => /\.exe$/i.test(application.Executable));
   const fullTrust = candidates.filter((application) => application.EntryPoint === "Windows.FullTrustApplication");
-  const matches = fullTrust.length > 0 ? fullTrust : candidates;
+  let matches = fullTrust.length > 0 ? fullTrust : candidates;
+
+  // 上游 26.915.4065.0 起把 codex-command-runner 等无界面辅助程序也注册为
+  // FullTrust Application；主入口按 MSIX 惯例 Id="App"（如 app/ChatGPT.exe）。
+  if (matches.length > 1) {
+    const mainApps = matches.filter((application) => application.Id === "App");
+    if (mainApps.length === 1) matches = mainApps;
+  }
 
   if (matches.length !== 1) {
-    throw new Error(`Expected one Windows application executable, found ${matches.length}`);
+    const executables = matches.map((application) => application.Executable).join(", ") || "none";
+    throw new Error(`Expected one Windows application executable, found ${matches.length}: ${executables}`);
   }
   return matches[0].Executable;
 }
