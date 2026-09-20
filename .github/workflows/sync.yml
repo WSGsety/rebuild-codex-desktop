@@ -2,11 +2,16 @@ name: Build Codex Desktop for Windows
 
 on:
   schedule:
-    - cron: "0 0 * * *"
+    # 错开整点排队高峰（此前 0 点整点触发普遍延迟 1.6~2.2 小时）
+    - cron: "17 1 * * *"
   workflow_dispatch:
     inputs:
       force:
         description: "Deprecated; unchanged App and embedded CLI are always skipped"
+        type: boolean
+        default: false
+      force_build:
+        description: "忽略版本未变判定，强制完整重新构建并重新上传"
         type: boolean
         default: false
 
@@ -23,12 +28,13 @@ concurrency:
 jobs:
   build-windows:
     runs-on: windows-latest
+    timeout-minutes: 30
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v5
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: npm
@@ -36,18 +42,36 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Install 7-Zip
-        run: choco install 7zip -y
-
-      - name: Add 7zz alias
+      - name: Ensure 7-Zip alias
         run: |
+          if (-not (Test-Path "C:\Program Files\7-Zip\7z.exe")) { choco install 7zip -y --no-progress }
           Copy-Item "C:\Program Files\7-Zip\7z.exe" "C:\Program Files\7-Zip\7zz.exe"
           echo "C:\Program Files\7-Zip" | Out-File -Append -Encoding utf8 $env:GITHUB_PATH
 
+      # 轻量探测：只查商店元数据 + npm CLI 版本 + Release 标记，不下载 MSIX。
+      # 版本都没变时本轮直接跳过，无变更日不再触碰商店 CDN。
+      - name: Early skip check
+        id: early
+        env:
+          GH_TOKEN: ${{ github.token }}
+          FORCE_BUILD: ${{ inputs.force_build }}
+        run: node scripts/check-windows-skip.js
+
+      - name: Cache upstream MSIX
+        if: steps.early.outputs.skip == 'false'
+        uses: actions/cache@v4
+        with:
+          path: ${{ runner.temp }}/codex-sync
+          key: codex-msix-${{ steps.early.outputs.msix_version }}
+          restore-keys: |
+            codex-msix-
+
       - name: Sync upstream Windows app
+        if: steps.early.outputs.skip == 'false'
         run: node scripts/sync-upstream.js --force --skip-mac
 
       - name: Read packaged app and CLI versions
+        if: steps.early.outputs.skip == 'false'
         id: version
         shell: bash
         run: |
@@ -66,6 +90,7 @@ jobs:
 
       - name: Check existing app-version release
         id: existing
+        if: steps.early.outputs.skip == 'false'
         shell: bash
         env:
           GH_TOKEN: ${{ github.token }}
@@ -98,6 +123,10 @@ jobs:
             echo "$ZIP_NAME already exists in $EXISTING_RELEASE"
           else
             echo "skip=false" >> "$GITHUB_OUTPUT"
+          fi
+          if [ "${{ inputs.force_build }}" = "true" ]; then
+            echo "skip=false" >> "$GITHUB_OUTPUT"
+            echo "force_build requested; rebuilding"
           fi
 
       - name: Patch app
@@ -133,7 +162,7 @@ jobs:
           ZIP_NAME: ${{ steps.version.outputs.zip_name }}
         run: |
           RELEASE_NOTES="基于 Microsoft Store Windows x64 安装包 $WIN_PACKAGE_VERSION 重新打包，App 版本为 $APP_VERSION。下载 ZIP 并解压后，运行“ChatGPT.exe”即可使用。"
-          VERIFIED_RELEASE_NOTES="$RELEASE_NOTES <!-- codex-cli-version:$CODEX_CLI_VERSION -->"
+          VERIFIED_RELEASE_NOTES="$RELEASE_NOTES <!-- codex-cli-version:$CODEX_CLI_VERSION --><!-- msix-version:$WIN_PACKAGE_VERSION -->"
           if gh release view "$TAG" >/dev/null 2>&1; then
             gh release edit "$TAG" --title "$TAG" --notes "$RELEASE_NOTES"
             gh release upload "$TAG" "out/$ZIP_NAME" out/SHA256SUMS.txt --clobber
@@ -149,7 +178,7 @@ jobs:
             process.stdin.on("data", (chunk) => data += chunk);
             process.stdin.on("end", () => {
               const release = JSON.parse(data);
-              for (const [name, file] of [[zip, `out/${zip}`], ["SHA256SUMS.txt", "out/SHA256SUMS.txt"]]) {
+              for (const [name, file] of [[zip, `out/${zip}`], ["SHA256SUMS.txt", `out/SHA256SUMS.txt`]]) {
                 const asset = (release.assets || []).find((item) => item.name === name);
                 if (!asset || asset.size !== fs.statSync(file).size) {
                   throw new Error(`Release asset verification failed: ${name}`);

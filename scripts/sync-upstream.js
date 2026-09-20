@@ -68,7 +68,14 @@ function wait(ms) {
 
 function curlDownload(url, dest, label) {
   console.log(`  [dl] ${label}`);
-  execSync(`curl -L --retry 3 --retry-delay 2 -o "${dest}" "${url}"`, { stdio: "inherit" });
+  // --fail: HTTP 错误直接失败，而不是把错误页写进目标文件
+  // --retry-all-errors: 商店 CDN 偶发 403/5xx 也纳入重试
+  // --speed-*: 传输持续 60 秒低于 10KB/s 视为断流，触发重试而不是挂死
+  execSync(
+    `curl -L --fail --retry 5 --retry-delay 2 --retry-all-errors ` +
+    `--connect-timeout 15 --speed-time 60 --speed-limit 10240 -o "${dest}" "${url}"`,
+    { stdio: "inherit" }
+  );
 }
 
 function extractArchive(archive, dest) {
