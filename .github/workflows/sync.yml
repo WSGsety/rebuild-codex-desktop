@@ -2,8 +2,9 @@ name: Build Codex Desktop for Windows
 
 on:
   schedule:
-    # 错开整点排队高峰（此前 0 点整点触发普遍延迟 1.6~2.2 小时）
-    - cron: "17 1 * * *"
+    # 北京时间每天 07:43（UTC 23:43）：早于 UTC 午夜整点排队高峰
+    # （此前 0 点整点触发普遍延迟 1.6~2.2 小时），跑完约在北京时间 08:00 前
+    - cron: "43 23 * * *"
   workflow_dispatch:
     inputs:
       force:
