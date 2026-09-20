@@ -20,6 +20,10 @@ permissions:
 
 env:
   NODE_VERSION: "24"
+  # runner.temp 与 node os.tmpdir() 默认不一致（D:\a\_temp vs C:\Users\...\Temp），
+  # 统一后 sync/build 与 actions/cache 才能落在同一目录
+  TEMP: ${{ runner.temp }}
+  TMP: ${{ runner.temp }}
 
 concurrency:
   group: codex-desktop-windows-release
@@ -59,7 +63,7 @@ jobs:
 
       - name: Cache upstream MSIX
         if: steps.early.outputs.skip == 'false'
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: ${{ runner.temp }}/codex-sync
           key: codex-msix-${{ steps.early.outputs.msix_version }}
