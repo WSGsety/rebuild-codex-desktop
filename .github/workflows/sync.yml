@@ -29,11 +29,6 @@ jobs:
   build-windows:
     runs-on: windows-latest
     timeout-minutes: 30
-    env:
-      # runner.temp 与 node os.tmpdir() 默认不一致（D:\a\_temp vs C:\Users\...\Temp），
-      # 统一后 sync 下载与 actions/cache 才能落在同一目录
-      TEMP: ${{ runner.temp }}
-      TMP: ${{ runner.temp }}
     steps:
       - name: Checkout
         uses: actions/checkout@v5
@@ -73,6 +68,11 @@ jobs:
 
       - name: Sync upstream Windows app
         if: steps.early.outputs.skip == 'false'
+        env:
+          # runner.temp 与 node os.tmpdir() 默认不一致（D:\a\_temp vs C:\Users\...\Temp），
+          # 统一后下载与 actions/cache 才能落在同一目录
+          TEMP: ${{ runner.temp }}
+          TMP: ${{ runner.temp }}
         run: node scripts/sync-upstream.js --force --skip-mac
 
       - name: Read packaged app and CLI versions
@@ -141,6 +141,8 @@ jobs:
       - name: Build Windows zip
         if: steps.existing.outputs.skip == 'false'
         env:
+          TEMP: ${{ runner.temp }}
+          TMP: ${{ runner.temp }}
           CODEX_CLI_VERSION: ${{ steps.version.outputs.codex_cli_version }}
           CODEX_WINDOWS_PACKAGE_VERSION: ${{ steps.version.outputs.win_package_version }}
         run: npm run build:win-x64
