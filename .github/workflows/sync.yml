@@ -20,10 +20,6 @@ permissions:
 
 env:
   NODE_VERSION: "24"
-  # runner.temp 与 node os.tmpdir() 默认不一致（D:\a\_temp vs C:\Users\...\Temp），
-  # 统一后 sync/build 与 actions/cache 才能落在同一目录
-  TEMP: ${{ runner.temp }}
-  TMP: ${{ runner.temp }}
 
 concurrency:
   group: codex-desktop-windows-release
@@ -33,6 +29,11 @@ jobs:
   build-windows:
     runs-on: windows-latest
     timeout-minutes: 30
+    env:
+      # runner.temp 与 node os.tmpdir() 默认不一致（D:\a\_temp vs C:\Users\...\Temp），
+      # 统一后 sync 下载与 actions/cache 才能落在同一目录
+      TEMP: ${{ runner.temp }}
+      TMP: ${{ runner.temp }}
     steps:
       - name: Checkout
         uses: actions/checkout@v5
