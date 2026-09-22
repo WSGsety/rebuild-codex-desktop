@@ -14,12 +14,10 @@
  * 保留"包内核心"模式（字段为 "1"），启动也不会被无包标识打断。
  * 写回前用 node --check 做语法守门，patch 出错不允许落盘。
  *
- * 模式选择：保留上游 codexWindowsAppContainedCore="1"，即 app-package
- * 模式（行为最接近官方 MSIX：RA() 会向 core 进程传递
- * CODEX_WINDOWS_REGISTERED_CORE=1）。曾短暂默认 bundled 模式
- * （把字段置 "0"），但 bundled 与 app-package 模式可能不完全等价，
- * 已按实测决策切回 app-package；如需回退，恢复把字段置 "0" 的
- * Rule B 即可。
+ * Rule B（package.json）: 把 codexWindowsAppContainedCore 置 "0"，
+ * 回到 bundled core 模式（resources/codex.exe，即重打包替换的官方 CLI）。
+ * 实测（2026-09-22）：app-package 模式（保留 "1" + Rule A 加壳）在便携
+ * 环境整个应用卡在加载，bundled 是便携环境唯一可用形态，故为默认。
  *
  * Usage:
  *   node scripts/patch-contained-core.js [platform]   # Apply patch (unix/win/omit=both)
@@ -118,6 +116,20 @@ function ruleAWrapBundles(plat, isCheck) {
 }
 
 
+
+function ruleBDisableContainedCore(plat, isCheck) {
+  const pkgPath = path.join(SRC_DIR, plat, "_asar", "package.json");
+  console.log(`\n-- [${plat}] src/${plat}/_asar/package.json`);
+  if (!fs.existsSync(pkgPath)) { console.log("   [skip] package.json not found"); return; }
+  const pkg = JSON.parse(fs.readFileSync(pkgPath, "utf-8"));
+  if (!(FIELD in pkg)) { console.log(`   [ok] ${FIELD} absent; nothing to do`); return; }
+  if (pkg[FIELD] !== "1") { console.log(`   [ok] ${FIELD} already ${JSON.stringify(pkg[FIELD])}`); return; }
+  if (isCheck) { console.log(`   [?] ${FIELD}: "1" -> "0" (dry-run)`); return; }
+  pkg[FIELD] = "0";
+  fs.writeFileSync(pkgPath, JSON.stringify(pkg, null, 2) + "\n", "utf-8");
+  console.log(`   [ok] ${FIELD}: "1" -> "0" (app ${pkg.version})`);
+}
+
 function main() {
   const args = process.argv.slice(2);
   const isCheck = args.includes("--check");
@@ -137,6 +149,7 @@ function main() {
   for (const plat of platforms) {
     console.log(`\n-- [${plat}] Rule A: package identity 探测加壳`);
     ruleAWrapBundles(plat, isCheck);
+    ruleBDisableContainedCore(plat, isCheck);
   }
 }
 
