@@ -91,8 +91,8 @@ jobs:
           echo "app_version=$APP_VERSION" >> "$GITHUB_OUTPUT"
           echo "win_package_version=$WIN_PACKAGE_VERSION" >> "$GITHUB_OUTPUT"
           echo "codex_cli_version=$CODEX_CLI_VERSION" >> "$GITHUB_OUTPUT"
-          echo "tag=v$APP_VERSION" >> "$GITHUB_OUTPUT"
-          echo "zip_name=Codex-win-x64-$APP_VERSION.zip" >> "$GITHUB_OUTPUT"
+          echo "tag=v$APP_VERSION-cli-$CODEX_CLI_VERSION" >> "$GITHUB_OUTPUT"
+          echo "zip_name=Codex-win-x64-$APP_VERSION-cli-$CODEX_CLI_VERSION.zip" >> "$GITHUB_OUTPUT"
 
       - name: Check existing app-version release
         id: existing
@@ -169,7 +169,7 @@ jobs:
           CODEX_CLI_VERSION: ${{ steps.version.outputs.codex_cli_version }}
           ZIP_NAME: ${{ steps.version.outputs.zip_name }}
         run: |
-          RELEASE_NOTES="基于 Microsoft Store Windows x64 安装包 $WIN_PACKAGE_VERSION 重新打包，App 版本为 $APP_VERSION。下载 ZIP 并解压后，运行“ChatGPT.exe”即可使用。"
+          RELEASE_NOTES="基于 Microsoft Store Windows x64 安装包 $WIN_PACKAGE_VERSION 重新打包，App 版本为 $APP_VERSION，内含 Codex CLI $CODEX_CLI_VERSION。下载 ZIP 并解压后，运行“ChatGPT.exe”即可使用。"
           VERIFIED_RELEASE_NOTES="$RELEASE_NOTES <!-- codex-cli-version:$CODEX_CLI_VERSION --><!-- msix-version:$WIN_PACKAGE_VERSION -->"
           if gh release view "$TAG" >/dev/null 2>&1; then
             gh release edit "$TAG" --title "$TAG" --notes "$RELEASE_NOTES"
