@@ -2,17 +2,11 @@ name: Build Codex Desktop for Windows
 
 on:
   schedule:
-    # schedule 调度队列在 UTC 午夜前后实测积压 2~3.6 小时（2026-09/10 运行数据：
-    # cron 23:43 实际创建 run 在 01:39~03:20 UTC），把 cron 挪进或贴近 23:00~00:00
-    # 窗口都躲不开同一积压，只能整体前移。
-    #
-    # 主档 UTC 20:43（北京 04:43）：按实测最差 3.6h 调度延迟，最迟约 00:20 UTC 启动、
-    # 北京 ~08:30 前完成构建，保住"上班前出包"；内容截止约太平洋时间下午
-    # （PT 13:45~17:15，随队列波动）。
-    # 补档 UTC 23:43：实际执行落在北京上午 ~10-11 点，内容截止覆盖到 PT 傍晚；
-    # 主档跑完后上游若有新版本，由补档追发新 Release（无变化则 ~1 分钟跳过）。
-    - cron: "43 20 * * *"
-    - cron: "43 23 * * *"
+    # 单档 UTC 21:43（北京 05:43）。schedule 调度队列在 UTC 午夜前后实测积压
+    # 2~3.6 小时（cron 23:43 时实际创建 run 在 01:39~03:20 UTC），整体前移后
+    # 典型延迟下北京 ~08:30 前完成构建，最差 3.6h 延迟约 09:30 完成。
+    # 分钟取 :43 避开整点触发高峰（GitHub 文档：整点为高负载时段）。
+    - cron: "43 21 * * *"
   workflow_dispatch:
     inputs:
       force:
@@ -56,6 +50,9 @@ jobs:
           if (-not (Test-Path "C:\Program Files\7-Zip\7z.exe")) { choco install 7zip -y --no-progress }
           Copy-Item "C:\Program Files\7-Zip\7z.exe" "C:\Program Files\7-Zip\7zz.exe"
           echo "C:\Program Files\7-Zip" | Out-File -Append -Encoding utf8 $env:GITHUB_PATH
+
+      - name: Test packaging scripts
+        run: npm test
 
       # 轻量探测：只查商店元数据 + npm CLI 版本 + Release 标记，不下载 MSIX。
       # 版本都没变时本轮直接跳过，无变更日不再触碰商店 CDN。
@@ -156,15 +153,31 @@ jobs:
           CODEX_WINDOWS_PACKAGE_VERSION: ${{ steps.version.outputs.win_package_version }}
         run: npm run build:win-x64
 
+      - name: Build Windows update zip
+        id: update
+        if: steps.existing.outputs.skip == 'false'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ steps.version.outputs.tag }}
+          TEMP: ${{ runner.temp }}
+          TMP: ${{ runner.temp }}
+        run: node scripts/build-windows-update.js
+
       - name: Create checksums
         if: steps.existing.outputs.skip == 'false'
         shell: bash
         env:
           ZIP_NAME: ${{ steps.version.outputs.zip_name }}
+          UPDATE_ZIP_NAME: ${{ steps.update.outputs.zip_name }}
         run: |
           cd out
           test -f "$ZIP_NAME"
-          sha256sum "$ZIP_NAME" > SHA256SUMS.txt
+          FILES=("$ZIP_NAME")
+          if [ -n "$UPDATE_ZIP_NAME" ]; then
+            test -f "$UPDATE_ZIP_NAME"
+            FILES+=("$UPDATE_ZIP_NAME")
+          fi
+          sha256sum "${FILES[@]}" > SHA256SUMS.txt
 
       - name: Publish release
         if: steps.existing.outputs.skip == 'false'
@@ -176,16 +189,35 @@ jobs:
           WIN_PACKAGE_VERSION: ${{ steps.version.outputs.win_package_version }}
           CODEX_CLI_VERSION: ${{ steps.version.outputs.codex_cli_version }}
           ZIP_NAME: ${{ steps.version.outputs.zip_name }}
+          UPDATE_ZIP_NAME: ${{ steps.update.outputs.zip_name }}
+          UPDATE_BASE_TAG: ${{ steps.update.outputs.base_tag }}
+          UPDATE_REASON: ${{ steps.update.outputs.reason }}
         run: |
-          RELEASE_NOTES="基于 Microsoft Store Windows x64 安装包 $WIN_PACKAGE_VERSION 重新打包，App 版本为 $APP_VERSION，内含 Codex CLI $CODEX_CLI_VERSION。下载 ZIP 并解压后，运行“ChatGPT.exe”即可使用。"
-          VERIFIED_RELEASE_NOTES="$RELEASE_NOTES <!-- codex-cli-version:$CODEX_CLI_VERSION --><!-- msix-version:$WIN_PACKAGE_VERSION -->"
-          if gh release view "$TAG" >/dev/null 2>&1; then
-            gh release edit "$TAG" --title "$TAG" --notes "$RELEASE_NOTES"
-            gh release upload "$TAG" "out/$ZIP_NAME" out/SHA256SUMS.txt --clobber
+          RELEASE_NOTES_PATH="$RUNNER_TEMP/codex-release-notes.txt"
+          printf '基于 Microsoft Store Windows x64 安装包 %s 重新打包，App 版本为 %s，内含 Codex CLI %s。\n\n' \
+            "$WIN_PACKAGE_VERSION" "$APP_VERSION" "$CODEX_CLI_VERSION" > "$RELEASE_NOTES_PATH"
+          printf '全量包：`%s`。首次安装或跨版本更新，请解压到新目录，运行“ChatGPT.exe”。\n\n' "$ZIP_NAME" >> "$RELEASE_NOTES_PATH"
+          FILES=("out/$ZIP_NAME" out/SHA256SUMS.txt)
+          if [ -n "$UPDATE_ZIP_NAME" ]; then
+            FILES+=("out/$UPDATE_ZIP_NAME")
+            printf '增量包：`%s`，仅适用于 `%s`。完全退出程序后，解压到原程序目录并覆盖文件，再启动程序。\n\n' \
+              "$UPDATE_ZIP_NAME" "$UPDATE_BASE_TAG" >> "$RELEASE_NOTES_PATH"
           else
-            gh release create "$TAG" "out/$ZIP_NAME" out/SHA256SUMS.txt \
+            printf '%s\n\n' "$UPDATE_REASON" >> "$RELEASE_NOTES_PATH"
+          fi
+          if gh release view "$TAG" >/dev/null 2>&1; then
+            gh release edit "$TAG" --title "$TAG" --notes-file "$RELEASE_NOTES_PATH"
+            # 同一 tag 强制重建时，清掉可能指向不同基线的旧增量资产。
+            gh release view "$TAG" --json assets --jq '.assets[].name' | while IFS= read -r ASSET; do
+              case "$ASSET" in
+                Codex-win-x64-*-update-from-*.zip) gh release delete-asset "$TAG" "$ASSET" --yes ;;
+              esac
+            done
+            gh release upload "$TAG" "${FILES[@]}" --clobber
+          else
+            gh release create "$TAG" "${FILES[@]}" \
               --title "$TAG" \
-              --notes "$RELEASE_NOTES"
+              --notes-file "$RELEASE_NOTES_PATH"
           fi
           gh api "repos/$GITHUB_REPOSITORY/releases/tags/$TAG" | node -e '
             const fs = require("fs");
@@ -194,7 +226,10 @@ jobs:
             process.stdin.on("data", (chunk) => data += chunk);
             process.stdin.on("end", () => {
               const release = JSON.parse(data);
-              for (const [name, file] of [[zip, `out/${zip}`], ["SHA256SUMS.txt", `out/SHA256SUMS.txt`]]) {
+              const files = [[zip, `out/${zip}`], ["SHA256SUMS.txt", "out/SHA256SUMS.txt"]];
+              const update = process.env.UPDATE_ZIP_NAME;
+              if (update) files.push([update, `out/${update}`]);
+              for (const [name, file] of files) {
                 const asset = (release.assets || []).find((item) => item.name === name);
                 if (!asset || asset.size !== fs.statSync(file).size) {
                   throw new Error(`Release asset verification failed: ${name}`);
@@ -202,4 +237,6 @@ jobs:
               }
             });
           '
-          gh release edit "$TAG" --title "$TAG" --notes "$VERIFIED_RELEASE_NOTES"
+          printf '<!-- codex-cli-version:%s --><!-- msix-version:%s -->\n' \
+            "$CODEX_CLI_VERSION" "$WIN_PACKAGE_VERSION" >> "$RELEASE_NOTES_PATH"
+          gh release edit "$TAG" --title "$TAG" --notes-file "$RELEASE_NOTES_PATH"
