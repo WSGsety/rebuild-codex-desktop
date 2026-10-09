@@ -9,11 +9,18 @@
 最新版本在 GitHub Releases：
 
 ```text
-Codex-win-x64-<App版本>.zip
+Codex-win-x64-<App版本>-cli-<CLI版本>.zip
+Codex-win-x64-<新App版本>-cli-<新CLI版本>-update-from-<旧App版本>-cli-<旧CLI版本>.zip
 SHA256SUMS.txt
 ```
 
 下载后解压，运行目录里的 `ChatGPT.exe`。实际桌面宿主由 Microsoft Store 包的 `AppxManifest.xml` 决定。
+
+首次安装下载全量 ZIP。已有上一版的用户可以只下载对应的增量 ZIP：完全退出程序（包括后台进程），把增量包解压到原程序目录，确认覆盖文件，再重新启动。不需要更新脚本。
+
+增量仅适用于文件名和 Release 说明中标明的旧版，App 和 CLI 版本都必须匹配；本地版本可以查看程序目录的 `build-info.json`。跳过多个版本时，依次安装对应增量，或下载最新版全量包并解压到新目录。
+
+增量包含新增或内容变化的完整文件，沿用全量包的目录结构。构建时会校验上一版全量包的 SHA256，并实际解压覆盖增量，确认文件和目录与新版全量包一致。如果新版删除文件/目录或改变文件类型，手动覆盖无法清理旧内容，本次仅发布全量包，并在 Release 说明原因。`app.asar` 和大型 EXE 变化时仍会整体包含，增量大小取决于实际变化。
 
 ## 工作方式
 
@@ -30,18 +37,19 @@ SHA256SUMS.txt
 3. 解包 Electron 应用。
 4. Patch `app.asar`。
 5. 用同一版本的官方 `@openai/codex` 替换 `codex.exe` 和三个 Windows 配套程序。
-6. 重新打包成只标明 App 版本的 zip。
-7. 上传到本仓库 Release。
+6. 重新打包成同时标明 App 和 CLI 版本的全量 ZIP。
+7. 下载上一版正式 Release 的全量包，生成并验证可以手动覆盖的增量 ZIP。
+8. 将全量包、可用的增量包及两者的 SHA256 上传到本仓库 Release。
 
-默认每天北京时间 08:00 检查一次。也可以在 GitHub Actions 里手动运行 `Build Codex Desktop for Windows`。
+默认每天北京时间 05:43 定时触发检查，实际启动时间受 GitHub 调度队列影响。也可以在 GitHub Actions 里手动运行 `Build Codex Desktop for Windows`。
 
-如果对应的 App 和内置 Codex CLI 版本组合已经发布，workflow 会跳过 patch 和打包。CLI 版本只用于内部更新判断，并记录在包内的 `build-info.json` 和 Release 内部标记中；Windows MSIX 版本会显示在中文 Release 说明里。
+如果对应的 App 和内置 Codex CLI 版本组合已经发布，workflow 会跳过 patch 和打包。App 和 CLI 版本同时展示在产物名、Release 标题和包内的 `build-info.json` 中；Windows MSIX 版本会显示在中文 Release 说明里。
 
 ## 费用说明
 
 如果仓库是 public，标准 GitHub-hosted Actions 通常免费。
 
-如果仓库是 private，会消耗 GitHub Actions 免费额度。当前完整构建一次大约 5-6 分钟；没有新版本时会更快，因为会跳过打包。
+如果仓库是 private，会消耗 GitHub Actions 免费额度。生成增量还需要下载上一版全量包并比较文件，运行时间取决于下载和压缩速度；没有新版本时会跳过打包。
 
 不想消耗太多额度，可以改成只手动触发、进一步降低检查频率，或者把仓库改成 public。
 
@@ -51,6 +59,8 @@ SHA256SUMS.txt
 
 - Node.js 24
 - 7-Zip
+
+运行打包测试时，7-Zip 需要以 `7zz` 命令出现在 PATH 中，执行 `npm test`。
 
 命令：
 
@@ -64,7 +74,7 @@ npm run build:win-x64
 产物在：
 
 ```text
-out/Codex-win-x64-<App版本>.zip
+out/Codex-win-x64-<App版本>-cli-<CLI版本>.zip
 ```
 
 ## 注意事项
