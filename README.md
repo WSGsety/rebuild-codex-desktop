@@ -4,9 +4,9 @@
 
 这个仓库做的是 **Codex Desktop App**，不是单独的 Codex CLI。新版使用 ChatGPT 桌面宿主，产物解压后运行 `ChatGPT.exe` 即可使用。
 
-## 当前产物
+## 下载与更新
 
-最新版本在 GitHub Releases：
+最新版本在 [GitHub Releases](https://github.com/WSGsety/rebuild-codex-desktop/releases)。每次发布保留全量包，可以安全覆盖上一版时额外提供增量包，附件命名如下：
 
 ```text
 Codex-win-x64-<App版本>-cli-<CLI版本>.zip
@@ -14,11 +14,18 @@ Codex-win-x64-<新App版本>-cli-<新CLI版本>-update-from-<旧App版本>-cli-<
 SHA256SUMS.txt
 ```
 
-下载后解压，运行目录里的 `ChatGPT.exe`。实际桌面宿主由 Microsoft Store 包的 `AppxManifest.xml` 决定。
+以对应 Release 的实际附件为准：历史版本不会自动补发增量包，附件中没有 `update-from` ZIP 时，请下载全量包。
 
-首次安装下载全量 ZIP。已有上一版的用户可以只下载对应的增量 ZIP：完全退出程序（包括后台进程），把增量包解压到原程序目录，确认覆盖文件，再重新启动。不需要更新脚本。
+| 使用情况 | 下载哪个包 | 如何使用 |
+| --- | --- | --- |
+| 首次安装、本地版本不匹配，或本次没有增量附件 | 全量 ZIP | 解压到新目录，运行 `启动 Codex.cmd` 或 `ChatGPT.exe` |
+| 本地 App 和 CLI 版本都与增量包标明的旧版一致 | `update-from` 增量 ZIP | 完全退出程序（包括后台进程），解压到原程序目录，选择替换全部文件，再重新启动 |
+
+增量包解压目标是原来包含 `ChatGPT.exe` 的目录，保留 ZIP 内部目录结构即可，不需要更新脚本。包内实际桌面宿主由 Microsoft Store 包的 `AppxManifest.xml` 决定。
 
 增量仅适用于文件名和 Release 说明中标明的旧版，App 和 CLI 版本都必须匹配；本地版本可以查看程序目录的 `build-info.json`。跳过多个版本时，依次安装对应增量，或下载最新版全量包并解压到新目录。
+
+`SHA256SUMS.txt` 列出该 Release 实际提供的 ZIP 校验值；提供增量时会同时列出全量和增量包。
 
 增量包含新增或内容变化的完整文件，沿用全量包的目录结构。构建时会校验上一版全量包的 SHA256，并实际解压覆盖增量，确认文件和目录与新版全量包一致。如果新版删除文件/目录或改变文件类型，手动覆盖无法清理旧内容，本次仅发布全量包，并在 Release 说明原因。`app.asar` 和大型 EXE 变化时仍会整体包含，增量大小取决于实际变化。
 
@@ -44,6 +51,8 @@ SHA256SUMS.txt
 默认每天北京时间 05:43 定时触发检查，实际启动时间受 GitHub 调度队列影响。也可以在 GitHub Actions 里手动运行 `Build Codex Desktop for Windows`。
 
 如果对应的 App 和内置 Codex CLI 版本组合已经发布，workflow 会跳过 patch 和打包。App 和 CLI 版本同时展示在产物名、Release 标题和包内的 `build-info.json` 中；Windows MSIX 版本会显示在中文 Release 说明里。
+
+提交新流程不会立刻重打包，也不会自动为已有 Release 补发增量。需要重建当前已发布版本时，在手动运行 Actions 时开启 `force_build`。
 
 ## 费用说明
 
