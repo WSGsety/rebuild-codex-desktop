@@ -29,7 +29,11 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
+  component-preview:
+    if: github.ref == 'refs/heads/codex/component-updates' && github.event_name == 'workflow_dispatch'
+    uses: ./.github/workflows/component-preview.yml
   build-windows:
+    if: github.ref == 'refs/heads/main'
     runs-on: windows-latest
     timeout-minutes: 30
     steps:

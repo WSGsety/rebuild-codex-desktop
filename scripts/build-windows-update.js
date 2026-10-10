@@ -149,4 +149,4 @@ if (require.main === module) {
   main().catch((error) => { console.error(`[x] ${error.message}`); process.exitCode = 1; });
 }
 
-module.exports = { selectPreviousRelease, buildUpdate, verifyChecksum };
+module.exports = { selectPreviousRelease, buildUpdate, verifyChecksum, inventory, sha256 };

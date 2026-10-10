@@ -30,11 +30,13 @@ GitHub 每个 Release 最多允许 1000 个附件，每个附件必须小于 2 G
 
 ## 客户端只访问 GitHub 下载链路
 
-更新入口固定为：
+未来正式渠道的更新入口计划为：
 
 ```text
 https://github.com/WSGsety/rebuild-codex-desktop/releases/latest/download/update.json
 ```
+
+当前实现为独立预览渠道：固定入口是 `https://github.com/WSGsety/rebuild-codex-desktop/releases/download/components-preview/update.json`，入口 Release 只发布清单、更新工具和校验表，说明链接到包含全量与五组组件的不可变版本。预览附件名为 `updater-preview.zip`，启动入口为 `检查预览更新.cmd`。预览不使用正式 Latest；只有这个渠道入口允许随版本刷新，清单中的程序包地址固定到具体版本。
 
 GitHub 支持固定的最新版附件下载入口。[官方说明](https://docs.github.com/en/repositories/releasing-projects-on-github/linking-to-releases)
 
@@ -106,6 +108,8 @@ ZIP 哈希用于检查下载内容，文件哈希用于本地复用和最终验�
 以后若引入跨 Release 组件复用，必须增加引用追踪和保留规则，在所有引用清单失效前不得删除对应旧组件。该优化暂不纳入首版实现。
 
 ## 实施范围和验收
+
+本次按用户要求实现并发布预览，检查限于脚本测试与发布附件完整性，不安装或运行真实 Windows 应用。用户自行观察连续多个版本；以下真实运行验收是后续迁入正式渠道前的检查目标，本次尚未执行。main 经批准仅新增预览 Action 入口，实现仍在 `codex/component-updates` 分支，正式构建与 Latest 保持独立。
 
 实施分为三个步骤：发布端生成组件和清单；编写本地检查及替换脚本；使用真实旧版完成跨版本升级和发布流程验收。现有全量包和安全的手动增量包继续保留。
 
