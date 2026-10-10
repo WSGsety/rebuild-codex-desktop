@@ -1,0 +1,52 @@
+name: Publish component updater preview
+run-name: 组件更新预览 ${{ github.event_name }}
+
+on:
+  workflow_dispatch:
+  workflow_call:
+  workflow_run:
+    workflows: [Build Codex Desktop for Windows]
+    types: [completed]
+    branches: [main]
+  push:
+    branches: [codex/component-updates]
+    paths:
+      - .github/workflows/component-preview.yml
+      - scripts/build-components.js
+      - scripts/publish-components-preview.js
+      - scripts/build-components.test.js
+      - updater/**
+
+permissions:
+  contents: write
+
+concurrency:
+  group: codex-components-preview
+  cancel-in-progress: false
+
+jobs:
+  preview:
+    if: github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success'
+    runs-on: windows-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          ref: codex/component-updates
+      - uses: actions/setup-node@v5
+        with:
+          node-version: '24'
+          cache: npm
+      - run: npm ci
+      - name: Prepare archive command
+        run: |
+          Copy-Item 'C:\Program Files\7-Zip\7z.exe' 'C:\Program Files\7-Zip\7zz.exe'
+          'C:\Program Files\7-Zip' | Out-File -Append -Encoding utf8 $env:GITHUB_PATH
+      - name: Basic checks
+        run: npm test
+      - name: Publish preview only
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TEMP: ${{ runner.temp }}
+          TMP: ${{ runner.temp }}
+        run: node scripts/publish-components-preview.js
