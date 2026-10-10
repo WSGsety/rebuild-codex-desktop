@@ -23,11 +23,17 @@ SHA256SUMS.txt
 
 增量包解压目标是原来包含 `ChatGPT.exe` 的目录，保留 ZIP 内部目录结构即可，不需要更新脚本。包内实际桌面宿主由 Microsoft Store 包的 `AppxManifest.xml` 决定。
 
-增量仅适用于文件名和 Release 说明中标明的旧版，App 和 CLI 版本都必须匹配；本地版本可以查看程序目录的 `build-info.json`。跳过多个版本时，依次安装对应增量，或下载最新版全量包并解压到新目录。
+增量仅适用于文件名和 Release 说明中标明的旧版，App 和 CLI 版本都必须匹配；本地版本可以查看程序目录的 `build-info.json`。正式渠道跳过多个版本且没有匹配增量时，下载最新版全量包并解压到新目录，无需依次安装历史增量。
 
 `SHA256SUMS.txt` 列出该 Release 实际提供的 ZIP 校验值；提供增量时会同时列出全量和增量包。
 
 增量包含新增或内容变化的完整文件，沿用全量包的目录结构。构建时会校验上一版全量包的 SHA256，并实际解压覆盖增量，确认文件和目录与新版全量包一致。如果新版删除文件/目录或改变文件类型，手动覆盖无法清理旧内容，本次仅发布全量包，并在 Release 说明原因。`app.asar` 和大型 EXE 变化时仍会整体包含，增量大小取决于实际变化。
+
+## 组件预览与安装更新 Skill
+
+组件更新实现仍在 `codex/component-updates` 分支，正式发布继续采用上述全量和匹配增量方式。首次使用、已有普通全量版和已有组件版的安装更新流程见 [使用者 Skill](https://github.com/WSGsety/rebuild-codex-desktop/tree/codex/component-updates/.agents/skills/codex-desktop-update)，安装及调用方法见 [预览分支 README](https://github.com/WSGsety/rebuild-codex-desktop/blob/codex/component-updates/README.md#用-skill-安装和更新)。
+
+组件预览每个版本保留一套附件，同版本覆盖原 tag，已有组件用户保持原渠道并按文件哈希更新。程序直接启动 `ChatGPT.exe`；`检查预览更新.cmd` 仅负责更新。测试范围见 [Windows 实机记录](https://github.com/WSGsety/rebuild-codex-desktop/blob/codex/component-updates/docs/windows-component-test-report.md)。
 
 ## 工作方式
 
@@ -43,7 +49,7 @@ SHA256SUMS.txt
 2. 从 Microsoft Store 下载 Windows x64 MSIX 包。
 3. 解包 Electron 应用。
 4. Patch `app.asar`。
-5. 用同一版本的官方 `@openai/codex` 替换 `codex.exe` 和三个 Windows 配套程序。
+5. 用所选版本的官方 `@openai/codex` Windows x64 程序包替换 `codex.exe` 和三个 Windows 配套程序。
 6. 重新打包成同时标明 App 和 CLI 版本的全量 ZIP。
 7. 下载上一版正式 Release 的全量包，生成并验证可以手动覆盖的增量 ZIP。
 8. 将全量包、可用的增量包及两者的 SHA256 上传到本仓库 Release。
