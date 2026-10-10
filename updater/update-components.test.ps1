@@ -114,6 +114,7 @@ try {
   $stdout=Join-Path $fixture 'unattended-output.txt';$stderr=Join-Path $fixture 'unattended-error.txt'
   $arguments='-NoProfile -NonInteractive -ExecutionPolicy Bypass -File "'+(Join-Path $PSScriptRoot 'update-components.ps1')+'" -RequestPath "'+$badRequest+'"'
   $child=Start-Process powershell.exe -ArgumentList $arguments -PassThru -RedirectStandardOutput $stdout -RedirectStandardError $stderr
+  $null=$child.Handle
   if (!$child.WaitForExit(10000)) { Stop-Process -Id $child.Id -Force; throw '无人值守失败仍在等待输入' }
   Assert-True ($child.ExitCode -ne 0) '无效安装目录没有返回失败'
   $errors=Get-Content -Raw -LiteralPath $stderr

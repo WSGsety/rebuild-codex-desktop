@@ -35,7 +35,7 @@ GitHub 每个 Release 最多允许 1000 个附件，每个附件必须小于 2 G
 https://github.com/WSGsety/rebuild-codex-desktop/releases/latest/download/update.json
 ```
 
-当前预览按版本发布，每个版本只有一个 Prerelease，tag 为 `preview-` 加正式 tag，例如 `preview-v26.1007.21434-cli-0.162.1`。全量包、五组组件、清单、更新工具和校验表均在该版本的附件中，不保留固定入口或跳转发布。更新器 1.1.0 通过 GitHub Release 列表接口查询全部分页，只选择已公开、带清单的 `preview-` 预览版本，并按发布时间确定最新预览。取得版本后，整轮更新只使用该版本的清单与附件。
+当前预览按版本发布，每个版本只有一个 Prerelease，tag 为 `preview-` 加正式 tag，例如 `preview-v26.1007.21434-cli-0.162.1`。全量包、五组组件、清单、更新工具和校验表均在该版本的附件中，不保留固定入口或跳转发布。更新器 1.1.x 通过 GitHub Release 列表接口查询全部分页，只选择已公开、带清单的 `preview-` 预览版本，并按发布时间确定最新预览。取得版本后，整轮更新只使用该版本的清单与附件。
 
 GitHub 支持固定的最新版附件下载入口。[官方说明](https://docs.github.com/en/repositories/releasing-projects-on-github/linking-to-releases)
 

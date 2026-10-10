@@ -40,7 +40,7 @@ SHA256SUMS.txt
 - 只检查不更新：在程序目录运行 `powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\update-components.ps1 -CheckOnly`。
 - 需要显式代理时，在上述 PowerShell 命令后加 `-Proxy http://127.0.0.1:7897`，端口换成自己的 HTTP 代理端口；脚本不修改系统代理或 TUN 配置。
 
-更新器 1.1.0 使用 `api.github.com` 查询所有分页中的已公开 `preview-` 版本，按发布时间选择带清单的最新预览，忽略正式版和草稿，再从 GitHub 附件下载清单。需要能访问 GitHub API 及附件 CDN；查询失败时不改原程序。之前下载过固定入口版工具的用户，请从最新 `preview-` 版本重新下载一次 `updater-preview.zip`。
+更新器 1.1.x 使用 `api.github.com` 查询所有分页中的已公开 `preview-` 版本，按发布时间选择带清单的最新预览，忽略正式版和草稿，再从 GitHub 附件下载清单。需要能访问 GitHub API 及附件 CDN；查询失败时不改原程序。之前下载过固定入口版工具的用户，请从最新 `preview-` 版本重新下载一次 `updater-preview.zip`。
 
 更新器比较目标文件的 SHA256，下载内容变化或缺失的组件，可以从本仓库旧版直接组成当前预览版，无需依次安装历史增量。组件下载量接近全量或组件不可下载时使用同一版本的全量包。下载和暂存目录校验完成后，需要完全退出程序才能切换；不会强制结束进程。
 
