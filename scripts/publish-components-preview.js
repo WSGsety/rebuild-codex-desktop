@@ -17,7 +17,11 @@ function gh(args, options = {}) {
 function releaseByTag(tag) {
   try { return JSON.parse(gh(["api", "repos/" + REPO + "/releases/tags/" + tag])); }
   catch (error) {
-    if (String(error.stderr).includes("404")) return null;
+    // 尚未公开的草稿可能没有 tag，改用发布列表查找。
+    if (String(error.stderr).includes("404")) {
+      const draft = gh(["api", "repos/" + REPO + "/releases?per_page=100", "--paginate", "--jq", ".[] | select(.tag_name == " + JSON.stringify(tag) + ")"]).trim();
+      return draft ? JSON.parse(draft) : null;
+    }
     throw error;
   }
 }
