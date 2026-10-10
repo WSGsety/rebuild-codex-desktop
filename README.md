@@ -33,7 +33,7 @@ SHA256SUMS.txt
 
 组件更新在 `codex/component-updates` 分支试用，正式发布仍保留上述全量和手动增量方式。
 
-预览版与正式版一样按版本保留，每个版本只有一个 Prerelease，tag 在正式版前加 `preview-`，例如 `preview-v26.1007.21434-cli-0.162.1`。在 [GitHub Releases](https://github.com/WSGsety/rebuild-codex-desktop/releases) 直接打开对应预览版本，即可下载全量 ZIP、runtime/app/cli/tools/meta 五组组件 ZIP、`update.json`、`updater-preview.zip` 和校验表，不再发布固定入口或跳转页。
+预览版与正式版一样按 App/CLI 版本保留，tag 在正式版前加 `preview-`，例如 `preview-v26.1007.21434-cli-0.162.1`。同版本重发继续使用原 tag，覆盖发布说明、清单、更新工具和整套程序包，清理旧附件；版本变化才创建新 tag。每个 Prerelease 只有一套附件：一个全量 ZIP、runtime/app/cli/tools/meta 各一个组件 ZIP、`update.json`、`updater-preview.zip` 和校验表，共 9 个附件。在 [GitHub Releases](https://github.com/WSGsety/rebuild-codex-desktop/releases) 直接打开对应预览版本，不再发布固定入口或跳转页。
 
 - 已有本仓库 Windows x64 便携版：把 `updater-preview.zip` 解压到包含 `ChatGPT.exe` 的程序目录，双击 `检查预览更新.cmd`。
 - 新安装：从最新 `preview-` 版本直接下载 `Codex-components-preview-win-x64-...zip`，解压到独立目录。

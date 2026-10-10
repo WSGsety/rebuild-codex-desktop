@@ -12,8 +12,8 @@
 ## Skill 应记录的项目知识
 
 1. **按任务定位入口**：正式构建查看 `.github/workflows/sync.yml`；预览构建查看 `component-preview.yml`、`scripts/build-components.js`、`scripts/publish-components-preview.js`；本地更新查看 `updater/update-components.ps1`。定时、版本和参数从实际文件读取，不在 Skill 中固化当前值。
-2. **正式与预览发布**：正式 tag 与包内 App/CLI 版本对应；预览 tag 是正式 tag 加 `preview-`，每个版本一个 Prerelease，清单、全量、组件、更新工具在同一版本，不创建固定入口或跳转发布。是否迁入 main 按当前用户授权决定，不由 Skill 自动扩大范围。
-3. **发布完整性**：验证来源全量 ZIP 的 SHA256；程序 ZIP 使用哈希名称、不覆盖既有不同内容。先上传并核对清单引用的全部包，再切换清单。检查 Prerelease、正式 Latest、附件大小和 SHA256。代码、README、更新工具最低版本、Release 说明一起核对。
+2. **正式与预览发布**：正式 tag 与包内 App/CLI 版本对应；预览 tag 是正式 tag 加 `preview-`，同 App/CLI 版本重发使用原 tag，覆盖说明和整套内容，版本变化才新建 tag。每个 Prerelease 只有一套 9 个附件，清单、全量、组件、更新工具在同一版本，不创建固定入口或跳转发布。是否迁入 main 按当前用户授权决定，不由 Skill 自动扩大范围。
+3. **发布完整性**：验证来源全量 ZIP 的 SHA256；程序 ZIP 使用哈希名称。先上传并核对新程序包，覆盖工具和校验表，最后切换清单；新附件验证完整后清理未引用的旧附件。检查 Prerelease、正式 Latest、附件数量、大小和 SHA256。代码、README、更新工具最低版本、Release 说明一起核对。
 4. **验证选择**：文档修改核对差异；行为修改运行对应测试。真实 Windows 升级仅在任务授权时执行；有授权则完成实际路径，不以 CI 测试或进程创建成功代替程序可用。报告 CI 失败的原因及最终运行链接，保留真实历史。
 5. **交付证据**：区分已修改、已发布、文件校验通过和实际启动成功；报告需要一次性更新工具的迁移要求、下载包大小与缓存使用情况；Mac 预下载缓存不能称为 Windows 直连大包下载成功，说明尚未覆盖的版本或网络条件。
 

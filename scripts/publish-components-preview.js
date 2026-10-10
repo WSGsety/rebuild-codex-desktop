@@ -29,6 +29,8 @@ function isCompletePreview(release, manifest) {
   if (!release?.prerelease || release.draft || !release.tag_name?.startsWith(PREVIEW_PREFIX) || manifest?.channel !== "preview" ||
       !["runtime", "app", "cli", "tools", "meta"].every((id) => manifest.components?.some((item) => item.id === id))) return false;
   const assets = release.assets || [];
+  const expected = ["update.json", "SHA256SUMS.txt", "updater-preview.zip", manifest.full?.name, ...manifest.components.map((item) => item.name)];
+  if (expected.length !== 9 || new Set(expected).size !== 9 || assets.length !== 9 || assets.some((item) => !expected.includes(item.name))) return false;
   if (!["update.json", "SHA256SUMS.txt", "updater-preview.zip"].every((name) => assets.some((item) => item.name === name && item.state === "uploaded" && item.size > 0))) return false;
   return [manifest.full, ...manifest.components].every((item) => {
     const asset = assets.find((candidate) => candidate.name === item?.name);
@@ -100,7 +102,7 @@ async function publishPreview() {
       const target = JSON.parse(gh(["api", "repos/" + REPO])).default_branch;
       gh(["release", "create", tag, "--repo", REPO, "--target", target, "--draft", "--prerelease", "--latest=false", "--title", title, "--notes-file", notesPath]);
     }
-    // 程序包按 SHA256 命名且不覆盖，读到旧清单的客户端仍可下载原包。
+    // 同版本替换整套内容，先准备并校验新包，再切换清单和清理旧包。
     const archives = names.filter((name) => name.endsWith(".zip") && name !== "updater-preview.zip");
     for (const name of archives) {
       const existing = release?.assets?.find((asset) => asset.name === name);
@@ -116,7 +118,11 @@ async function publishPreview() {
     await verifyAssets(tag, outDir, ["updater-preview.zip", "SHA256SUMS.txt"]);
     // 最后切换清单，公开清单引用的全部程序包此时已可下载。
     gh(["release", "upload", tag, path.join(outDir, "update.json"), "--repo", REPO, "--clobber"], { stdio: "inherit" });
-    const published = await verifyAssets(tag, outDir, names);
+    const uploaded = await verifyAssets(tag, outDir, names);
+    for (const asset of uploaded.assets) {
+      if (!names.includes(asset.name)) gh(["release", "delete-asset", tag, asset.name, "--repo", REPO, "--yes"]);
+    }
+    const published = releaseByTag(tag);
     gh(["release", "edit", tag, "--repo", REPO, "--draft=false", "--prerelease", "--latest=false", "--title", title, "--notes-file", notesPath]);
     if (!isCompletePreview({ ...published, draft: false }, result.manifest)) throw new Error("预览清单引用的附件不完整");
     const latest = JSON.parse(gh(["api", "repos/" + REPO + "/releases/latest"]));

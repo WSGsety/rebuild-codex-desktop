@@ -81,6 +81,8 @@ test("按版本预览必须直接包含清单引用的全部包，不能把旧�
   assert.equal(isCompletePreview({ ...release, assets: metadata }, manifest), false);
   assert.equal(isCompletePreview({ ...release, tag_name: "components-preview" }, manifest), false);
   assert.equal(isCompletePreview({ ...release, assets: assets.slice(0, -1) }, manifest), false);
+  assert.equal(isCompletePreview({ ...release, assets: [...assets, { name: "component-cli-old.zip", size: 1, state: "uploaded" }] }, manifest), false);
+  assert.equal(isCompletePreview({ ...release, assets: [...assets, assets[3]] }, manifest), false);
   assert.equal(isCompletePreview({ ...release, assets: assets.map((item) => ({ ...item, digest: "sha256:" + "b".repeat(64) })) }, manifest), false);
   const old = structuredClone(manifest);
   old.full.url = old.full.url.replace("/preview-v26.1002.52244-cli-0.162.0/", "/components-preview-v-old/");
