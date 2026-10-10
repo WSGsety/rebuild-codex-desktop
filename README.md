@@ -48,7 +48,20 @@ SHA256SUMS.txt
 
 预览 Action 为 [Publish component updater preview](https://github.com/WSGsety/rebuild-codex-desktop/actions/workflows/component-preview.yml)：支持手动运行；main 的正式构建成功后检查最新正式包，来源或打包规则变化时发布新预览，同内容则跳过。main 只放入口，始终从预览分支读取实现。预览标记为 Prerelease，不设置为正式 Latest。
 
-当前只做基础脚本和附件完整性检查，未做真实安装与跨版本运行验证；先在独立目录观察多个版本，之后再决定是否迁入主分支。详细流程见 [组件更新方案](docs/component-update-design.md)。
+已完成一次 Windows 历史版本升级和组件更新实测，具体构建、网络条件与范围见 [实机记录](docs/windows-component-test-report.md)；登录后任务和连续版本稳定性仍待观察，之后再决定是否迁入主分支。详细流程见 [组件更新方案](docs/component-update-design.md)。
+
+## 用 Skill 安装和更新
+
+提供面向使用者的 [codex-desktop-update Skill](.agents/skills/codex-desktop-update/SKILL.md)，帮助检查本地版本、选择全量或匹配的增量包、校验下载并安装；默认正式版，明确要求预览版时才使用组件更新。它不构建或发布程序。
+
+将整个 `.agents/skills/codex-desktop-update` 目录（包括 `references`）复制到本机 Codex 的技能目录。Windows 默认位置为 `%USERPROFILE%\.codex\skills\codex-desktop-update`；如果自定义了 `CODEX_HOME`，则放到其 `skills` 下。重新开始一个会话后，可以这样请求：
+
+```text
+$codex-desktop-update 帮我安装最新正式版，先确认安装位置。
+$codex-desktop-update 把 D:\software\Codex-Desktop 升级到最新正式版，优先使用适用的增量包。
+```
+
+第二行的路径换成自己的程序目录。也可以明确指定“组件预览版”；只想查询时说“检查更新，不安装”。执行需要访问 Windows 文件和运行命令，远程协助则需要用户提供可用连接。
 
 ## 工作方式
 
