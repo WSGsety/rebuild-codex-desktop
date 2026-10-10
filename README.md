@@ -23,7 +23,7 @@ SHA256SUMS.txt
 
 增量包解压目标是原来包含 `ChatGPT.exe` 的目录，保留 ZIP 内部目录结构即可，不需要更新脚本。包内实际桌面宿主由 Microsoft Store 包的 `AppxManifest.xml` 决定。
 
-增量仅适用于文件名和 Release 说明中标明的旧版，App 和 CLI 版本都必须匹配；本地版本可以查看程序目录的 `build-info.json`。跳过多个版本时，依次安装对应增量，或下载最新版全量包并解压到新目录。
+增量仅适用于文件名和 Release 说明中标明的旧版，App 和 CLI 版本都必须匹配；本地版本可以查看程序目录的 `build-info.json`。正式渠道跳过多个版本且没有匹配增量时，下载最新版全量包并解压到新目录；无需依次安装历史增量。组件预览渠道则由更新器按文件哈希跨版本更新。
 
 `SHA256SUMS.txt` 列出该 Release 实际提供的 ZIP 校验值；提供增量时会同时列出全量和增量包。
 
@@ -46,7 +46,7 @@ SHA256SUMS.txt
 
 原目录保留为旁边的 `.backup-...` 目录，其中的未知自建文件也保留在备份中，不会自动复制到新程序目录。用户配置目录不由更新器修改。已下载并校验的包保存在旁边的 `.component-cache`，可重试复用；更新记录是 `.last-update.json`。确认新版可用后，可自行清理备份和缓存。
 
-预览 Action 为 [Publish component updater preview](https://github.com/WSGsety/rebuild-codex-desktop/actions/workflows/component-preview.yml)：支持手动运行；main 的正式构建成功后检查最新正式包，来源或打包规则变化时发布新预览，同内容则跳过。main 只放入口，始终从预览分支读取实现。预览标记为 Prerelease，不设置为正式 Latest。
+预览 Action 为 [Publish component updater preview](https://github.com/WSGsety/rebuild-codex-desktop/actions/workflows/component-preview.yml)：支持手动运行；main 的正式构建成功后检查最新正式包，来源或打包规则变化时发布或覆盖对应预览，同内容则跳过。main 中的预览 Action 只负责入口，始终从预览分支读取实现。预览标记为 Prerelease，不设置为正式 Latest。
 
 已完成一次 Windows 历史版本升级和组件更新实测，具体构建、网络条件与范围见 [实机记录](docs/windows-component-test-report.md)；登录后任务和连续版本稳定性仍待观察，之后再决定是否迁入主分支。详细流程见 [组件更新方案](docs/component-update-design.md)。
 
@@ -78,7 +78,7 @@ $codex-desktop-update 更新我现有的组件版，保持当前渠道。
 2. 从 Microsoft Store 下载 Windows x64 MSIX 包。
 3. 解包 Electron 应用。
 4. Patch `app.asar`。
-5. 用同一版本的官方 `@openai/codex` 替换 `codex.exe` 和三个 Windows 配套程序。
+5. 用所选版本的官方 `@openai/codex` Windows x64 程序包替换 `codex.exe` 和三个 Windows 配套程序。
 6. 重新打包成同时标明 App 和 CLI 版本的全量 ZIP。
 7. 下载上一版正式 Release 的全量包，生成并验证可以手动覆盖的增量 ZIP。
 8. 将全量包、可用的增量包及两者的 SHA256 上传到本仓库 Release。
