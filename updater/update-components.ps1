@@ -135,8 +135,9 @@ function Expand-ProgramZip([string]$Zip, [string]$Destination, $Manifest, [strin
   try {
     # 先验证整个存档，任何越界或重复条目都不能落盘。
     foreach ($entry in $archive.Entries) {
-      $directory = $entry.FullName.EndsWith('/')
-      $name = $entry.FullName.TrimEnd('/')
+      $entryName = $entry.FullName.Replace('\','/')
+      $directory = $entryName.EndsWith('/')
+      $name = $entryName.TrimEnd('/')
       $null = Resolve-ProgramPath $Destination $name
       if ($seen.ContainsKey($name) -or (($entry.ExternalAttributes -shr 16) -band 61440) -eq 40960) { throw 'ZIP 包含重复条目或符号链接' }
       $seen[$name]=$true
@@ -145,9 +146,10 @@ function Expand-ProgramZip([string]$Zip, [string]$Destination, $Manifest, [strin
     }
     foreach ($file in $expected.Keys) { if (!$seen.ContainsKey($file)) { throw "ZIP 缺少程序文件：$file" } }
     foreach ($entry in $archive.Entries) {
-      $name=$entry.FullName.TrimEnd('/')
+      $entryName=$entry.FullName.Replace('\','/')
+      $name=$entryName.TrimEnd('/')
       $full=Resolve-ProgramPath $Destination $name
-      if ($entry.FullName.EndsWith('/')) { [IO.Directory]::CreateDirectory($full) | Out-Null }
+      if ($entryName.EndsWith('/')) { [IO.Directory]::CreateDirectory($full) | Out-Null }
       else {
         [IO.Directory]::CreateDirectory([IO.Path]::GetDirectoryName($full)) | Out-Null
         $input=$entry.Open()

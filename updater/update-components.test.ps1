@@ -74,7 +74,7 @@ try {
   Assert-Throws {Assert-TargetDirectory $stage $manifest} '未发现文件损坏'
   $evil=Join-Path $fixture 'evil.zip'
   $archive=[IO.Compression.ZipFile]::Open($evil,[IO.Compression.ZipArchiveMode]::Create)
-  $entry=$archive.CreateEntry('../outside.txt');$stream=$entry.Open();$stream.WriteByte(1);$stream.Dispose();$archive.Dispose()
+  $entry=$archive.CreateEntry('..\outside.txt');$stream=$entry.Open();$stream.WriteByte(1);$stream.Dispose();$archive.Dispose()
   Assert-Throws {Expand-ProgramZip $evil $stage $manifest 'cli'} '未拒绝 ZIP 越界'
   Assert-True (!(Test-Path -LiteralPath (Join-Path $fixture 'outside.txt'))) 'ZIP 在目标外写入了文件'
   foreach($file in $files){
