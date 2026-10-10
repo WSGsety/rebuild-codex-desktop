@@ -52,16 +52,17 @@ SHA256SUMS.txt
 
 ## 用 Skill 安装和更新
 
-提供面向使用者的 [codex-desktop-update Skill](.agents/skills/codex-desktop-update/SKILL.md)，帮助检查本地版本、选择全量或匹配的增量包、校验下载并安装；默认正式版，明确要求预览版时才使用组件更新。它不构建或发布程序。
+提供面向使用者的 [codex-desktop-update Skill](.agents/skills/codex-desktop-update/SKILL.md)，覆盖首次安装、已有普通全量版和已有组件版，帮助选择全量、匹配的增量或组件更新，并校验下载。首次安装默认正式版，已有组件版默认保持组件渠道；用户可以明确指定切换。它不构建或发布程序。
 
 将整个 `.agents/skills/codex-desktop-update` 目录（包括 `references`）复制到本机 Codex 的技能目录。Windows 默认位置为 `%USERPROFILE%\.codex\skills\codex-desktop-update`；如果自定义了 `CODEX_HOME`，则放到其 `skills` 下。重新开始一个会话后，可以这样请求：
 
 ```text
 $codex-desktop-update 帮我安装最新正式版，先确认安装位置。
 $codex-desktop-update 把 D:\software\Codex-Desktop 升级到最新正式版，优先使用适用的增量包。
+$codex-desktop-update 更新我现有的组件版，保持当前渠道。
 ```
 
-第二行的路径换成自己的程序目录。也可以明确指定“组件预览版”；只想查询时说“检查更新，不安装”。执行需要访问 Windows 文件和运行命令，远程协助则需要用户提供可用连接。
+示例路径换成自己的程序目录。普通全量版不满足增量基线时会改用最新全量包；组件版即使版本号相同，也会按清单哈希检查内容是否变化。也可以明确指定“组件预览版”；只想查询时说“检查更新，不安装”。执行需要访问 Windows 文件和运行命令，远程协助则需要用户提供可用连接。
 
 ## 工作方式
 

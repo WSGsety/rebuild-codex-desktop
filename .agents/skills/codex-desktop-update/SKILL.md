@@ -1,6 +1,6 @@
 ---
 name: codex-desktop-update
-description: 帮助用户从 WSGsety/rebuild-codex-desktop 的 GitHub Releases 下载、安装和更新 Windows x64 Codex Desktop 便携版，判断全量包、匹配版本的增量包或用户指定的组件预览更新。适用于安装最新版、检查更新和升级现有程序，不用于修改源码、构建或发布 Release，也不用于升级单独的 Codex CLI。
+description: 帮助用户从 WSGsety/rebuild-codex-desktop 的 GitHub Releases 下载、安装和更新 Windows x64 Codex Desktop 便携版，覆盖首次使用、已有全量版和已有组件版，自动判断全量包、匹配版本的增量包或组件更新并保持原渠道。适用于安装最新版、检查更新和升级现有程序，不用于修改源码、构建或发布 Release，也不用于升级单独的 Codex CLI。
 ---
 
 # 安装与更新 Codex Desktop
@@ -9,8 +9,10 @@ description: 帮助用户从 WSGsety/rebuild-codex-desktop 的 GitHub Releases �
 
 ## 先确定更新对象
 
-- 从用户提供的位置或已知安装路径读取 `build-info.json`，记录 `appVersion`、`codexCliVersion`、`entryExecutable`。无法确定程序目录时先询问，不扫描或改动其他软件。
-- 默认使用正式 Latest。只有用户明确要求组件更新或预览版时才选择 Prerelease，不静默改变渠道。用户只要求检查时，只查询和报告，不安装。
+- 从用户提供的位置或已知安装路径判断是否已经安装；存在时读取 `build-info.json`，记录 App/CLI 版本、入口以及 `componentUpdateChannel`、`componentBuildId`。首次使用不要求已有程序或版本信息。无法确定安装位置时先询问，不扫描或改动其他软件。
+- 首次使用默认正式 Latest；已有普通版继续正式渠道；元数据标明 `componentUpdateChannel=preview` 或具有有效 `componentBuildId` 的安装，默认继续组件预览渠道。用户明确指定的渠道优先，不静默把组件版切回正式版。
+- 按安装目录元数据识别能力，不按当初下载的包类型判断：组件预览的全量包新安装后也属于组件版。仅存在更新工具不证明已经切换渠道；缺失或损坏的元数据不得当作空目录，也不能据此认定是组件版。
+- 用户只要求检查时，只查询和报告，不安装。已有组件版即使 App/CLI 版本号或 tag 相同，也须获取当前清单按文件哈希检查，不能沿用正式版的版本号跳过判断。
 - 在 Windows 上执行安装；从 Mac/Linux 协助时，使用已有、获准的 Windows 连接。没有连接就交付适合用户机器的步骤，不声称已经安装。
 - 全量和增量的执行方法见 [Windows 操作](references/windows.md)。按实际环境使用 PowerShell 和系统解压工具；`gh` 可选，不要求用户安装 Node.js、Git 或构建工具。
 
@@ -20,12 +22,17 @@ description: 帮助用户从 WSGsety/rebuild-codex-desktop 的 GitHub Releases �
 
 正式版查询 `https://api.github.com/repos/WSGsety/rebuild-codex-desktop/releases/latest`，确认不是草稿或 Prerelease。记录返回的 tag，整轮操作从该 Release 获取包和 `SHA256SUMS.txt`。
 
-| 本地情况 | 选择 |
+| 使用者状态 | 选择 |
 | --- | --- |
-| 首次安装、缺少版本信息、没有匹配增量，或跨版本跳跃 | 最新正式全量 ZIP，先解压到独立目录 |
-| 当前 App/CLI 均与最新 Release 的增量基线一致 | 该增量 ZIP，先备份并准备覆盖后的完整目录 |
-| App/CLI 均已相同，只要求普通更新 | 报告版本已一致；同版本重新安装需用户确有重装意图，不能仅据版本号宣称文件完整 |
-| 用户明确选择组件预览更新 | 使用最新公开 `preview-` Release 的更新工具；已有便携版可按文件哈希跨版本更新 |
+| 从未安装 | 所选渠道的全量 ZIP，校验后安装到独立目录；组件预览的首次安装也用全量 |
+| 已有普通全量版，App/CLI 都精确匹配最新正式增量的基线 | 使用匹配增量，先备份并准备覆盖后的完整目录 |
+| 已有普通全量版，跨版本、缺失版本信息或没有匹配增量 | 最新正式全量 ZIP，先解压到独立目录；不要求用户逐版补增量 |
+| 已有组件版，包括从组件预览全量包安装的用户 | 默认保持组件渠道；补齐或升级更新工具，按最新清单哈希更新，不要求逐版升级 |
+| 普通便携版用户明确转为组件预览 | 装入最新预览更新工具，按哈希组成目标；不兼容更新器的旧目录则改用预览全量包 |
+| 组件用户明确转回正式版 | 使用最新正式全量包准备新目录，保留旧组件安装备份，不套用正式增量基线假定 |
+| 普通正式版的 App/CLI 均已相同，只要求普通更新 | 报告版本已一致；同版本重新安装需用户确有重装意图，不能仅据版本号宣称文件完整 |
+
+组件模式所需组件为零时无需下载程序包；变化组件的下载量接近全量，或更新器无法安全处理现有目录时，使用同一目标的全量包是有效回退，不是要求用户重走历史版本链。
 
 正式包命名：
 

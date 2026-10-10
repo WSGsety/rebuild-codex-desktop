@@ -5,10 +5,20 @@
 ## 查看本地版本与校验下载
 
 ```powershell
-$info = Get-Content -LiteralPath (Join-Path $installDir 'build-info.json') -Raw -Encoding UTF8 | ConvertFrom-Json
-$info | Select-Object appVersion, codexCliVersion, entryExecutable
+$infoPath = Join-Path $installDir 'build-info.json'
+$info = $null
+if (Test-Path -LiteralPath $infoPath -PathType Leaf) {
+  try {
+    $info = Get-Content -LiteralPath $infoPath -Raw -Encoding UTF8 | ConvertFrom-Json
+    $info | Select-Object appVersion, codexCliVersion, entryExecutable, componentUpdateChannel, componentBuildId
+  } catch {
+    Write-Warning '版本信息不可读，应保留现有目录并使用全量方案，不能匹配增量。'
+  }
+}
 Get-FileHash -LiteralPath $zipPath -Algorithm SHA256
 ```
+
+程序目录不存在时按首次安装处理；目录已存在但缺少有效版本信息时保留其内容，用所选渠道的全量包准备新目录。已有有效组件元数据时保持组件渠道；缺少更新工具时补装工具，不把它误判为普通全量版。
 
 从 `$checksumsPath` 中查找与 ZIP 文件名精确相同的行，再比较其 SHA256，缺行也视为失败。优先使用 Release API 返回的附件下载地址；有 `digest` 时可同时核对。跟随 GitHub 的附件 CDN 重定向是正常现象，不能把网页 HTML 或错误响应当作 ZIP。
 
@@ -30,7 +40,7 @@ Get-FileHash -LiteralPath $zipPath -Algorithm SHA256
 
 ## 组件预览更新
 
-用户明确选择预览时使用此流程。组件包由发布清单和更新器选择，不要求用户逐个手动挑包。
+用户明确选择预览，或已有安装的组件元数据表明正在使用预览渠道时，使用此流程。首次安装先用预览全量包；已有普通全量版转入组件渠道和已有组件版继续更新都可走更新器。组件包由发布清单和更新器选择，不要求用户逐个手动挑包或逐版升级。
 
 - 首次安装：使用该预览 `update.json` 指向的全量 ZIP，核对校验表、清单大小及哈希，按全量流程解压到独立目录。
 - 已有便携版：下载同一预览的 `updater-preview.zip`，校验后把其中 `检查预览更新.cmd` 和 `update-components.ps1` 放入实际程序目录。旧工具可能不支持新清单的最低版本，应先更新工具。
@@ -46,7 +56,7 @@ Get-FileHash -LiteralPath $zipPath -Algorithm SHA256
 
 CMD 返回 0 只证明独立更新进程已启动。更新器会把自身复制到安装目录旁边的临时目录，再由独立 PowerShell 执行；等待实际完成，核对输出、目标文件和 `<安装目录>.last-update.json`，不要直接在原程序目录调用内部 `-RequestPath` 模式。没有变化时不会产生新的成功报告，不能把旧报告当作本次完成。
 
-更新器会比较文件 SHA256，校验下载、解包和完整目标，再备份并切换。所有组件都变化且体积接近全量时选择全量是正常结果；组件网络失败可尝试同一清单的全量包，完整性失败不能降级绕过校验。
+同 tag 重发可能只改变更新工具或元数据，即使 App/CLI 与本地相同，也要重新获取当前清单。更新器会比较文件 SHA256，校验下载、解包和完整目标，再备份并切换。所有组件都变化且体积接近全量时选择全量是正常结果；组件网络失败可尝试同一清单的全量包，完整性失败不能降级绕过校验。更新器明确不支持的旧便携目录改用同一预览的全量安装方案，保留旧目录，不试图强行覆盖；用户切回正式版也用正式全量包准备新目录。
 
 如果显式指定 `-ManifestUrl`，地址必须是本仓库具体预览 tag 的 `update.json`，记录未验证默认版本发现这一边界；指定 `-Proxy` 仅使用用户提供或已验证的 HTTP 代理，不修改系统设置。GitHub API 与附件 CDN 是不同请求，单个小请求成功不代表大包下载通畅。
 
