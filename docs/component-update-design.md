@@ -9,10 +9,9 @@
 发布附件布局如下，名称中的尖括号表示待构建时生成的值：
 
 ```text
-Release v<App版本>-cli-<CLI版本>-b<构建标识>
-  Codex-win-x64-<App版本>-cli-<CLI版本>.zip
-  Codex-win-x64-...-update-from-....zip  可安全手动覆盖时提供
-  updater.zip                          旧用户首次获取更新工具
+预览 Release preview-v<App版本>-cli-<CLI版本>
+  Codex-components-preview-win-x64-<App版本>-cli-<CLI版本>-<ZIP哈希>.zip
+  updater-preview.zip                  旧用户首次获取更新工具
   update.json                          最新版文件清单
   component-runtime-<ZIP哈希>.zip
   component-app-<ZIP哈希>.zip
@@ -36,13 +35,13 @@ GitHub 每个 Release 最多允许 1000 个附件，每个附件必须小于 2 G
 https://github.com/WSGsety/rebuild-codex-desktop/releases/latest/download/update.json
 ```
 
-当前实现为独立预览渠道：固定入口是 `https://github.com/WSGsety/rebuild-codex-desktop/releases/download/components-preview/update.json`，入口 Release 只发布清单、更新工具和校验表，说明链接到包含全量与五组组件的不可变版本。预览附件名为 `updater-preview.zip`，启动入口为 `检查预览更新.cmd`。预览不使用正式 Latest；只有这个渠道入口允许随版本刷新，清单中的程序包地址固定到具体版本。
+当前预览按版本发布，每个版本只有一个 Prerelease，tag 为 `preview-` 加正式 tag，例如 `preview-v26.1007.21434-cli-0.162.1`。全量包、五组组件、清单、更新工具和校验表均在该版本的附件中，不保留固定入口或跳转发布。更新器 1.1.0 通过 GitHub Release 列表接口查询全部分页，只选择已公开、带清单的 `preview-` 预览版本，并按发布时间确定最新预览。取得版本后，整轮更新只使用该版本的清单与附件。
 
 GitHub 支持固定的最新版附件下载入口。[官方说明](https://docs.github.com/en/repositories/releasing-projects-on-github/linking-to-releases)
 
 清单中的全量包和组件包地址指向具体 Release 的稳定下载 URL。客户端读取一次清单后，整轮更新固定使用该清单中的版本和地址，不在下载过程中重新切换到另一版。清单不保存会过期的 CDN 签名 URL。
 
-主更新路径无需扫描历史 Release，不依赖 `api.github.com` 或 `raw.githubusercontent.com`。公开 Release 附件可以匿名下载。[Release 附件接口说明](https://docs.github.com/en/rest/releases/assets#get-a-release-asset)
+预览更新需要访问 `api.github.com` 查询版本列表，再访问 `github.com` 的附件地址及其 CDN；不依赖 `raw.githubusercontent.com` 或用户的 GitHub 登录。旧固定入口版工具需重新下载一次 `updater-preview.zip`。公开 Release 附件可以匿名下载。[Release 附件接口说明](https://docs.github.com/en/rest/releases/assets#get-a-release-asset)
 
 “可以访问 GitHub”需要包括附件下载所使用的官方 CDN。2026 年 10 月 9 日对本仓库当前全量包的 HTTP HEAD 查询返回 302，跳转域名为 `release-assets.githubusercontent.com`；后续下载也应接受 GitHub 官方下载域名的正常跳转。如果用户仅能打开 `github.com` 网页、无法访问附件 CDN，全量包和组件包都会受影响。
 
@@ -83,7 +82,7 @@ ZIP 哈希用于检查下载内容，文件哈希用于本地复用和最终验�
 
 ## 任意旧版到最新版的本地流程
 
-用户第一次把 `updater.zip` 解压到现有程序目录，双击 `检查更新.cmd`。后续全量包默认携带该工具。更新器使用 Windows PowerShell，程序目录中的更新脚本先复制到安装目录旁的临时工作目录，再由临时副本执行，避免替换自身文件和工作目录时发生锁定。
+用户第一次把 `updater-preview.zip` 解压到现有程序目录，双击 `检查预览更新.cmd`。后续全量包默认携带该工具。更新器使用 Windows PowerShell，程序目录中的更新脚本先复制到安装目录旁的临时工作目录，再由临时副本执行，避免替换自身文件和工作目录时发生锁定。
 
 1. 读取最新版清单，逐个比较目标文件的 SHA256。内容相同的文件在本地复用；缺失或不同的文件使其所属组件进入下载列表。旧版缺少 `build-info.json` 时仍可比对文件，不要求经过任何中间版本。
 2. 下载必要组件并验证 ZIP SHA256，在同一磁盘的临时目录组成完整最新版。再次验证全部目标文件、目录和启动入口；下载失败、解包越界、空间不足或校验失败时不改原安装。
@@ -99,7 +98,7 @@ ZIP 哈希用于检查下载内容，文件哈希用于本地复用和最终验�
 
 每轮构建先生成完整目标目录，再生成组件、清单和校验表。正式发布前在 Draft Release 上传完整附件并核对其名称、大小和校验值，完成后发布并设为 Latest。客户端不会拿到先公开清单、后补组件的半成品版本。
 
-同 App 和 CLI 版本重新构建但程序内容变化时，应产生新的构建标识和 Release tag；保留原来的 App 与 CLI 展示信息。已经公开的组件和清单不使用 `--clobber` 覆盖，避免正在更新的客户端下载到不同内容。相同内容的完整构建可以复用已经发布的版本。
+预览 tag 仅采用 `preview-` 加正式 tag，不追加构建哈希。同 App 和 CLI 版本的修复仍使用该 tag，以清单中的构建标识区分内容；全量与组件 ZIP 按 SHA256 命名且不覆盖。先上传并校验全部新 ZIP，再更新工具和校验表，最后切换 `update.json`。同版本的旧 ZIP 保留，以便已经读取旧清单的客户端完成下载；相同内容的构建跳过打包。正式渠道后续迁入时再确定其重新构建规则。
 
 构建跳过判断也需要纳入更新器和打包规则的变化，不能仅比较上游 App 和 CLI 版本，否则更新工具修复后可能没有可发布的新产物。
 

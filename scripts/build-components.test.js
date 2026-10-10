@@ -47,7 +47,9 @@ test("清单与所有组件共同组成完整目录，哈希匹配且同内容�
   const outDir = path.join(root, "one");
   const result = await buildComponents({ appDir, outDir, sourceTag: "v26.1002.52244-cli-0.162.0", revision: "a".repeat(40) });
   assert.deepEqual(result.manifest.components.map((component) => component.id), ["runtime", "app", "cli", "tools", "meta"]);
-  assert.ok(result.tag.startsWith("components-preview-"));
+  assert.equal(result.tag, "preview-v26.1002.52244-cli-0.162.0");
+  for (const item of [result.manifest.full, ...result.manifest.components]) assert.ok(item.url.includes("/releases/download/" + result.tag + "/"));
+  assert.ok(result.manifest.full.name.endsWith(result.manifest.full.sha256 + ".zip"));
   assert.ok(result.manifest.directories.includes("resources/empty"));
   const assembled = path.join(root, "assembled");
   for (const component of result.manifest.components) {
@@ -64,12 +66,25 @@ test("清单与所有组件共同组成完整目录，哈希匹配且同内容�
   assert.ok(zipList.includes("update-components.ps1"));
 });
 
-test("不能把正式发布或草稿当作已完成的预览渠道", () => {
-  const assets = ["update.json", "SHA256SUMS.txt", "updater-preview.zip"].map((name) => ({ name, size: 1 }));
-  assert.ok(isCompletePreview({ prerelease: true, draft: false, assets }));
-  assert.equal(Boolean(isCompletePreview({ prerelease: false, draft: false, assets })), false);
-  assert.equal(Boolean(isCompletePreview({ prerelease: true, draft: true, assets })), false);
-  assert.equal(Boolean(isCompletePreview({ prerelease: true, draft: false, assets: assets.slice(0, 2) })), false);
+test("按版本预览必须直接包含清单引用的全部包，不能把旧入口当作完成发布", () => {
+  const hash = "a".repeat(64);
+  const components = ["runtime", "app", "cli", "tools", "meta"].map((id) => ({ id, name: "component-" + id + "-" + hash + ".zip", sha256: hash, sizeBytes: 1 }));
+  const full = { name: "full-" + hash + ".zip", sha256: hash, sizeBytes: 1 };
+  for (const item of [full, ...components]) item.url = "https://github.com/WSGsety/rebuild-codex-desktop/releases/download/preview-v26.1002.52244-cli-0.162.0/" + item.name;
+  const manifest = { channel: "preview", full, components };
+  const metadata = ["update.json", "SHA256SUMS.txt", "updater-preview.zip"].map((name) => ({ name, state: "uploaded", size: 1 }));
+  const assets = [...metadata, ...[full, ...components].map((item) => ({ name: item.name, state: "uploaded", size: item.sizeBytes, digest: "sha256:" + item.sha256 }))];
+  const release = { tag_name: "preview-v26.1002.52244-cli-0.162.0", prerelease: true, draft: false, assets };
+  assert.ok(isCompletePreview(release, manifest));
+  assert.equal(isCompletePreview({ ...release, prerelease: false }, manifest), false);
+  assert.equal(isCompletePreview({ ...release, draft: true }, manifest), false);
+  assert.equal(isCompletePreview({ ...release, assets: metadata }, manifest), false);
+  assert.equal(isCompletePreview({ ...release, tag_name: "components-preview" }, manifest), false);
+  assert.equal(isCompletePreview({ ...release, assets: assets.slice(0, -1) }, manifest), false);
+  assert.equal(isCompletePreview({ ...release, assets: assets.map((item) => ({ ...item, digest: "sha256:" + "b".repeat(64) })) }, manifest), false);
+  const old = structuredClone(manifest);
+  old.full.url = old.full.url.replace("/preview-v26.1002.52244-cli-0.162.0/", "/components-preview-v-old/");
+  assert.equal(isCompletePreview(release, old), false);
 });
 
 test("Windows 基础检查只使用测试文件，不安装或运行桌面应用", { skip: process.platform !== "win32" }, () => {

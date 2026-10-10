@@ -91,6 +91,24 @@ try {
   Switch-ProgramDirectory $old $stage $backup
   Assert-TargetDirectory $old $manifest
   Assert-True (Test-Path -LiteralPath (Join-Path $backup '用户文件.txt')) '成功更新删除了用户自建文件'
+  $oldPreview=[PSCustomObject]@{tag_name='preview-v26.1002.52244-cli-0.162.0';prerelease=$true;draft=$false;published_at='2026-10-09T12:00:00Z';assets=@([PSCustomObject]@{name='update.json';state='uploaded';size=1})}
+  $newPreview=[PSCustomObject]@{tag_name='preview-v26.1007.21434-cli-0.162.1';prerelease=$true;draft=$false;published_at='2026-10-10T12:00:00Z';assets=$oldPreview.assets}
+  $formal=[PSCustomObject]@{tag_name='v26.1008.21434-cli-0.162.1';prerelease=$false;draft=$false;published_at='2026-10-11T12:00:00Z';assets=$oldPreview.assets}
+  $draft=[PSCustomObject]@{tag_name='preview-v26.1008.21434-cli-0.162.1';prerelease=$true;draft=$true;published_at='2026-10-11T12:00:00Z';assets=$oldPreview.assets}
+  $missing=[PSCustomObject]@{tag_name='preview-v26.1009.21434-cli-0.162.1';prerelease=$true;draft=$false;published_at='2026-10-12T12:00:00Z';assets=@()}
+  Assert-True ((Get-LatestPreviewRelease @($formal,$draft,$oldPreview,$missing,$newPreview)).tag_name -eq $newPreview.tag_name) '最新预览选择了正式版、草稿或缺少清单的版本'
+  Assert-Throws {Get-ReleaseFile 'https://api.github.com/repos/other/repo/releases?per_page=100&page=1' (Join-Path $fixture 'bad.json') ''} '查询接口未限制到本仓库'
+  $script:requestedUrls=@()
+  function Get-ReleaseFile([string]$Url,[string]$Destination,[string]$ProxyUrl) {
+    $script:requestedUrls += $Url
+    if ($Url.EndsWith('page=1')) { $items=@($oldPreview)+@(1..99|ForEach-Object{$formal}) }
+    elseif ($Url.EndsWith('page=2')) { $items=@($newPreview) }
+    else { throw '查询了非预期页码' }
+    $items | ConvertTo-Json -Depth 6 | Set-Content -LiteralPath $Destination -Encoding UTF8
+  }
+  $found=Get-PreviewManifestUrl $fixture ''
+  Assert-True ($found -eq ('https://github.com/WSGsety/rebuild-codex-desktop/releases/download/'+$newPreview.tag_name+'/update.json')) '分页查询未找到后页的最新预览'
+  Assert-True ($script:requestedUrls.Count -eq 2) '查询没有按分页结束'
   Write-Output ("PowerShell 基础检查通过："+$passed+" 个断言；没有安装或运行桌面应用。")
 } finally {
   Remove-Item -LiteralPath $fixture -Recurse -Force

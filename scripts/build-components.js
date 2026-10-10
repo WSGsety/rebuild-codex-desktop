@@ -8,6 +8,7 @@ const { inventory, sha256 } = require("./build-windows-update");
 
 const ROOT = path.resolve(__dirname, "..");
 const REPOSITORY = "WSGsety/rebuild-codex-desktop";
+const PREVIEW_PREFIX = "preview-";
 const MAX_BYTES = 2000000000;
 const CLI_FILES = new Set(["codex.exe", "codex-code-mode-host.exe", "codex-command-runner.exe", "codex-windows-sandbox-setup.exe"]);
 const META_FILES = new Set(["build-info.json", "启动 Codex.cmd", "检查预览更新.cmd", "update-components.ps1"]);
@@ -77,7 +78,7 @@ async function buildComponents({ appDir, outDir, sourceTag, revision }) {
   if (!files.some((file) => file.path === info.entryExecutable)) throw new Error("清单缺少启动程序");
   files.sort((a, b) => a.path.localeCompare(b.path, "en"));
   directories.sort();
-  const tag = `components-preview-v${info.appVersion}-cli-${info.codexCliVersion}-b${buildId.slice(0, 16)}`;
+  const tag = `${PREVIEW_PREFIX}v${info.appVersion}-cli-${info.codexCliVersion}`;
   const baseUrl = `https://github.com/${REPOSITORY}/releases/download/${tag}/`;
   fs.mkdirSync(outDir, { recursive: true });
   const staging = fs.mkdtempSync(path.join(process.env.RUNNER_TEMP || os.tmpdir(), "cg-"));
@@ -105,16 +106,18 @@ async function buildComponents({ appDir, outDir, sourceTag, revision }) {
       components.push({ id, name, url: baseUrl + name, sha256: digest, sizeBytes });
       console.log(`   [component] ${id}: ${(sizeBytes / 1048576).toFixed(1)} MiB`);
     }
-    const fullName = `Codex-components-preview-win-x64-${info.appVersion}-cli-${info.codexCliVersion}.zip`;
-    const fullPath = path.join(outDir, fullName);
+    const fullPath = path.join(outDir, "full.zip");
     packZip(appDir, fullPath);
-    const full = { name: fullName, url: baseUrl + fullName, sha256: await sha256(fullPath), sizeBytes: fs.statSync(fullPath).size };
+    const fullHash = await sha256(fullPath);
+    const fullName = `Codex-components-preview-win-x64-${info.appVersion}-cli-${info.codexCliVersion}-${fullHash}.zip`;
+    const full = { name: fullName, url: baseUrl + fullName, sha256: fullHash, sizeBytes: fs.statSync(fullPath).size };
+    fs.renameSync(fullPath, path.join(outDir, fullName));
     if (full.sizeBytes >= MAX_BYTES) throw new Error("全量包超过附件大小限制");
     const updaterDir = path.join(staging, "updater");
     fs.mkdirSync(updaterDir);
     for (const name of ["检查预览更新.cmd", "update-components.ps1"]) fs.copyFileSync(path.join(appDir, name), path.join(updaterDir, name));
     packZip(updaterDir, path.join(outDir, "updater-preview.zip"));
-    const manifest = { schemaVersion: 1, updaterVersion: "1.0.0", minimumUpdaterVersion: "1.0.0", channel: "preview", platform: "win32", arch: "x64", buildId, sourceTag, builderRevision: revision, recipeId: recipe, appVersion: info.appVersion, codexCliVersion: info.codexCliVersion, entryExecutable: info.entryExecutable, full, components, files, directories };
+    const manifest = { schemaVersion: 1, updaterVersion: "1.1.0", minimumUpdaterVersion: "1.1.0", channel: "preview", platform: "win32", arch: "x64", buildId, sourceTag, builderRevision: revision, recipeId: recipe, appVersion: info.appVersion, codexCliVersion: info.codexCliVersion, entryExecutable: info.entryExecutable, full, components, files, directories };
     fs.writeFileSync(path.join(outDir, "update.json"), JSON.stringify(manifest, null, 2) + "\n");
     const sums = [];
     for (const name of fs.readdirSync(outDir).filter((name) => name.endsWith(".zip") || name === "update.json").sort()) sums.push(`${await sha256(path.join(outDir, name))}  ${name}`);
@@ -136,4 +139,4 @@ if (require.main === module) {
     .catch((error) => { console.error(error); process.exitCode = 1; });
 }
 
-module.exports = { componentFor, safePath, buildComponents, recipeId };
+module.exports = { componentFor, safePath, buildComponents, recipeId, PREVIEW_PREFIX };

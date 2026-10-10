@@ -1,6 +1,6 @@
 ﻿param(
   [string]$InstallDir = $PSScriptRoot,
-  [string]$ManifestUrl = 'https://github.com/WSGsety/rebuild-codex-desktop/releases/download/components-preview/update.json',
+  [string]$ManifestUrl = '',
   [string]$Proxy = '',
   [switch]$CheckOnly,
   [switch]$NoLaunch,
@@ -33,7 +33,7 @@ function Assert-ReleaseUrl([string]$Url) {
 
 function Assert-Manifest($Manifest) {
   if ($Manifest.schemaVersion -ne 1 -or $Manifest.channel -ne 'preview' -or $Manifest.platform -ne 'win32' -or $Manifest.arch -ne 'x64') { throw '不支持此清单版本或更新渠道' }
-  if ($Manifest.minimumUpdaterVersion -notmatch '^\d+\.\d+\.\d+$' -or [version]$Manifest.minimumUpdaterVersion -gt [version]'1.0.0') { throw '请先从组件预览渠道下载新版 updater-preview.zip 再检查更新' }
+  if ($Manifest.minimumUpdaterVersion -notmatch '^\d+\.\d+\.\d+$' -or [version]$Manifest.minimumUpdaterVersion -gt [version]'1.1.0') { throw '请先从最新 preview- 发布下载新版 updater-preview.zip 再检查更新' }
   if ($Manifest.buildId -notmatch '^[a-f0-9]{64}$' -or !$Manifest.files -or !$Manifest.components) { throw '清单缺少构建标识或文件信息' }
   $components = @{}
   foreach ($component in $Manifest.components) {
@@ -100,7 +100,9 @@ function Get-RequiredComponents([string]$Root, $Manifest) {
 }
 
 function Get-ReleaseFile([string]$Url, [string]$Destination, [string]$ProxyUrl) {
-  Assert-ReleaseUrl $Url
+  if (([Uri]$Url).Host -eq 'api.github.com') {
+    if ($Url -notmatch '^https://api\.github\.com/repos/WSGsety/rebuild-codex-desktop/releases\?per_page=100&page=[1-9]\d*$') { throw '非法 GitHub 发布查询地址' }
+  } else { Assert-ReleaseUrl $Url }
   [Net.ServicePointManager]::SecurityProtocol = [Net.ServicePointManager]::SecurityProtocol -bor [Net.SecurityProtocolType]::Tls12
   $parameters = @{ Uri=$Url; OutFile=$Destination; UseBasicParsing=$true; TimeoutSec=1200; Headers=@{'User-Agent'='CodexComponentsPreviewUpdater/1'} }
   if ($ProxyUrl) { $parameters.Proxy = $ProxyUrl }
@@ -109,6 +111,30 @@ function Get-ReleaseFile([string]$Url, [string]$Destination, [string]$ProxyUrl) 
     try { Invoke-WebRequest @parameters | Out-Null; return } catch { $failure=$_; if ($attempt -lt 2) { Start-Sleep -Seconds 2 } }
   }
   throw $failure
+}
+
+function Get-LatestPreviewRelease($Releases) {
+  return @($Releases | Where-Object {
+    $_.prerelease -and !$_.draft -and $_.published_at -and
+    $_.tag_name -match '^preview-v\d+(?:\.\d+){2,3}-cli-\d+\.\d+\.\d+(?:[-+][0-9A-Za-z.-]+)?$' -and
+    @($_.assets | Where-Object { $_.name -eq 'update.json' -and $_.state -eq 'uploaded' -and $_.size -gt 0 }).Count
+  } | Sort-Object published_at -Descending)[0]
+}
+
+function Get-PreviewManifestUrl([string]$Work, [string]$ProxyUrl) {
+  $latest=$null
+  $page=1
+  do {
+    $file=Join-Path $Work ('releases-'+$page+'.json')
+    Get-ReleaseFile ('https://api.github.com/repos/WSGsety/rebuild-codex-desktop/releases?per_page=100&page='+$page) $file $ProxyUrl
+    $releases=Get-Content -Raw -LiteralPath $file -Encoding UTF8 | ConvertFrom-Json
+    $releases=@($releases)
+    $candidate=Get-LatestPreviewRelease $releases
+    if ($candidate -and (!$latest -or $candidate.published_at -gt $latest.published_at)) { $latest=$candidate }
+    $page++
+  } while ($releases.Count -eq 100)
+  if (!$latest) { throw '没有找到带完整清单的 preview- 预览发布' }
+  return 'https://github.com/WSGsety/rebuild-codex-desktop/releases/download/'+[Uri]::EscapeDataString($latest.tag_name)+'/update.json'
 }
 
 function Get-VerifiedPackage($Package, [string]$Directory, [string]$ProxyUrl) {
@@ -197,7 +223,9 @@ function Invoke-ComponentUpdate($Request, [string]$Work) {
     $lock=[IO.File]::Open($lockPath,[IO.FileMode]::OpenOrCreate,[IO.FileAccess]::ReadWrite,[IO.FileShare]::None)
     $manifestPath=Join-Path $Work 'update.json'
     Write-Host '正在检查 GitHub 组件预览更新...'
-    Get-ReleaseFile $Request.ManifestUrl $manifestPath $Request.Proxy
+    $manifestUrl=$Request.ManifestUrl
+    if (!$manifestUrl) { $manifestUrl=Get-PreviewManifestUrl $Work $Request.Proxy }
+    Get-ReleaseFile $manifestUrl $manifestPath $Request.Proxy
     $manifest=Get-Content -Raw -LiteralPath $manifestPath -Encoding UTF8 | ConvertFrom-Json
     Assert-Manifest $manifest
     $needed=@(Get-RequiredComponents $root $manifest)
