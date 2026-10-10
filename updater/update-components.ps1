@@ -316,6 +316,6 @@ try {
 } catch {
   Write-Host ('更新未完成：'+$_.Exception.Message) -ForegroundColor Red
   Write-Host '原程序或备份仍保留；没有强制结束任何运行中的程序。'
-  $null=Read-Host '按回车关闭'
+  if (!$AcceptUpdate -and !($request -and $request.AcceptUpdate)) { $null=Read-Host '按回车关闭' }
   exit 1
 }

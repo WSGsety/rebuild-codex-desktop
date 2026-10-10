@@ -91,7 +91,7 @@ async function publishPreview() {
     const notes = "组件更新器预览版，应用文件来源于正式发布 [" + source.tag_name + "](" + source.html_url + ")。\n\n" +
       "更新器与打包代码：[codex/component-updates @ " + revision.slice(0, 7) + "](https://github.com/" + REPO + "/commit/" + revision + ")。\n\n" +
       "已有便携版用户下载 **updater-preview.zip**，解压到程序目录，双击 **检查预览更新.cmd**。新安装用户使用 **" + result.manifest.full.name + "**。\n\n" +
-      "更新器通过 GitHub API 查询最新的 preview- 预览版本，再直接下载该版本清单和组件。旧的固定入口已取消，之前下载过更新工具的用户需要重新下载一次 **updater-preview.zip**（更新器 1.1.0）。它不设置正式 Latest。它按文件 SHA256 选择组件，完全退出程序后准备备份和目录切换；用户配置目录不由更新器修改。\n\n" +
+      "更新器通过 GitHub API 查询最新的 preview- 预览版本，再直接下载该版本清单和组件。旧的固定入口已取消，之前下载过更新工具的用户需要重新下载一次 **updater-preview.zip**（更新器 " + result.manifest.updaterVersion + "）。它不设置正式 Latest。它按文件 SHA256 选择组件，完全退出程序后准备备份和目录切换；用户配置目录不由更新器修改。\n\n" +
       "仅完成基础脚本检查与发布包完整性检查，尚未进行真实安装观察。请在独立目录试用，保留更新产生的备份；稳定性由后续多个版本的试用结果评估。\n\n" +
       "构建标识：" + result.manifest.buildId + "。\n\n" + sourceMarker + recipeMarker + "\n";
     fs.writeFileSync(notesPath, notes);

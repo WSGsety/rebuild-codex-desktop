@@ -117,7 +117,7 @@ async function buildComponents({ appDir, outDir, sourceTag, revision }) {
     fs.mkdirSync(updaterDir);
     for (const name of ["检查预览更新.cmd", "update-components.ps1"]) fs.copyFileSync(path.join(appDir, name), path.join(updaterDir, name));
     packZip(updaterDir, path.join(outDir, "updater-preview.zip"));
-    const manifest = { schemaVersion: 1, updaterVersion: "1.1.0", minimumUpdaterVersion: "1.1.0", channel: "preview", platform: "win32", arch: "x64", buildId, sourceTag, builderRevision: revision, recipeId: recipe, appVersion: info.appVersion, codexCliVersion: info.codexCliVersion, entryExecutable: info.entryExecutable, full, components, files, directories };
+    const manifest = { schemaVersion: 1, updaterVersion: "1.1.1", minimumUpdaterVersion: "1.1.0", channel: "preview", platform: "win32", arch: "x64", buildId, sourceTag, builderRevision: revision, recipeId: recipe, appVersion: info.appVersion, codexCliVersion: info.codexCliVersion, entryExecutable: info.entryExecutable, full, components, files, directories };
     fs.writeFileSync(path.join(outDir, "update.json"), JSON.stringify(manifest, null, 2) + "\n");
     const sums = [];
     for (const name of fs.readdirSync(outDir).filter((name) => name.endsWith(".zip") || name === "update.json").sort()) sums.push(`${await sha256(path.join(outDir, name))}  ${name}`);

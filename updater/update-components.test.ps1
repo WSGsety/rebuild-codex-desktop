@@ -109,6 +109,15 @@ try {
   $found=Get-PreviewManifestUrl $fixture ''
   Assert-True ($found -eq ('https://github.com/WSGsety/rebuild-codex-desktop/releases/download/'+$newPreview.tag_name+'/update.json')) '分页查询未找到后页的最新预览'
   Assert-True ($script:requestedUrls.Count -eq 2) '查询没有按分页结束'
+  $badRequest=Join-Path $fixture 'unattended-request.json'
+  [PSCustomObject]@{InstallDir=(Join-Path $fixture 'no-program');ManifestUrl='';Proxy='';CheckOnly=$false;NoLaunch=$true;AcceptUpdate=$true} | ConvertTo-Json | Set-Content -LiteralPath $badRequest -Encoding UTF8
+  $stdout=Join-Path $fixture 'unattended-output.txt';$stderr=Join-Path $fixture 'unattended-error.txt'
+  $arguments='-NoProfile -NonInteractive -ExecutionPolicy Bypass -File "'+(Join-Path $PSScriptRoot 'update-components.ps1')+'" -RequestPath "'+$badRequest+'"'
+  $child=Start-Process powershell.exe -ArgumentList $arguments -PassThru -RedirectStandardOutput $stdout -RedirectStandardError $stderr
+  if (!$child.WaitForExit(10000)) { Stop-Process -Id $child.Id -Force; throw '无人值守失败仍在等待输入' }
+  Assert-True ($child.ExitCode -ne 0) '无效安装目录没有返回失败'
+  $errors=Get-Content -Raw -LiteralPath $stderr
+  Assert-True (!$errors -or $errors -notmatch 'Read-Host|NonInteractive') '无人值守失败触发了控制台输入异常'
   Write-Output ("PowerShell 基础检查通过："+$passed+" 个断言；没有安装或运行桌面应用。")
 } finally {
   Remove-Item -LiteralPath $fixture -Recurse -Force
