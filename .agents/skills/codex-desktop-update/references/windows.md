@@ -64,10 +64,10 @@ CMD 返回 0 只证明独立更新进程已启动。更新器会把自身复制�
 
 ```powershell
 & (Join-Path $installDir 'resources\codex.exe') --version
-Start-Process -FilePath (Join-Path $installDir '启动 Codex.cmd')
+Start-Process -FilePath (Join-Path $installDir 'ChatGPT.exe') -WorkingDirectory $installDir
 ```
 
-入口以包内信息为准；旧包也可能使用 `Codex.exe`。若从 SSH 远程运行，session 0 的 GUI 进程不是用户桌面窗口。只使用可用的交互会话打开，并验证该程序窗口；拿不到窗口证据时报告“文件更新已验证，桌面启动未验证”。
+新版应用入口是 `ChatGPT.exe`，直接启动该 EXE；`检查预览更新.cmd` 仅用于更新。只有操作真实历史包且其 `build-info.json` 明确记录其他入口时，才使用该历史入口，不把旧名用在新版指引中。若从 SSH 远程运行，session 0 的 GUI 进程不是用户桌面窗口。只使用可用的交互会话打开，并验证该程序窗口；拿不到窗口证据时报告“文件更新已验证，桌面启动未验证”。
 
 下载失败、无效目录、磁盘不足或校验失败时停止替换，保留当前安装和可用备份。无人值守模式应失败退出，不等待回车；检查真实工作进程，不把引导进程的退出码当成更新结果。
 

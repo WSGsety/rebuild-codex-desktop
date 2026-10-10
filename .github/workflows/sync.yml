@@ -200,13 +200,13 @@ jobs:
           RELEASE_NOTES_PATH="$RUNNER_TEMP/codex-release-notes.txt"
           printf '基于 Microsoft Store Windows x64 安装包 %s 重新打包，App 版本为 %s，内含 Codex CLI %s。\n\n' \
             "$WIN_PACKAGE_VERSION" "$APP_VERSION" "$CODEX_CLI_VERSION" > "$RELEASE_NOTES_PATH"
-          printf '**全量包**：`%s`。首次安装、本地版本不匹配或没有可用增量时，解压到新目录，运行 `启动 Codex.cmd` 或 `ChatGPT.exe`。\n\n' "$ZIP_NAME" >> "$RELEASE_NOTES_PATH"
+          printf '**全量包**：`%s`。首次安装、本地版本不匹配或没有可用增量时，解压到新目录，运行 `ChatGPT.exe`。\n\n' "$ZIP_NAME" >> "$RELEASE_NOTES_PATH"
           FILES=("out/$ZIP_NAME" out/SHA256SUMS.txt)
           if [ -n "$UPDATE_ZIP_NAME" ]; then
             FILES+=("out/$UPDATE_ZIP_NAME")
             printf '**增量包**：`%s`，仅适用于 `%s`。\n\n' \
               "$UPDATE_ZIP_NAME" "$UPDATE_BASE_TAG" >> "$RELEASE_NOTES_PATH"
-            printf '先确认程序目录中 `build-info.json` 的 App 和 CLI 版本都匹配上述旧版。完全退出程序（包括后台进程），将增量 ZIP 解压到原来包含 `ChatGPT.exe` 的目录，保留内部目录结构并选择替换全部文件，然后重新启动。无需更新脚本；版本不匹配请下载全量包。\n\n' >> "$RELEASE_NOTES_PATH"
+            printf '先确认程序目录中 `build-info.json` 的 App 和 CLI 版本都匹配上述旧版。完全退出程序（包括后台进程），将增量 ZIP 解压到原来包含 `ChatGPT.exe` 的目录，保留内部目录结构并选择替换全部文件，然后运行 `ChatGPT.exe`。无需更新脚本；版本不匹配请下载全量包。\n\n' >> "$RELEASE_NOTES_PATH"
           else
             printf '%s\n\n' "$UPDATE_REASON" >> "$RELEASE_NOTES_PATH"
           fi
