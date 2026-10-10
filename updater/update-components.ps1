@@ -11,6 +11,8 @@
 
 $ErrorActionPreference = 'Stop'
 $ProgressPreference = 'SilentlyContinue'
+# 从 PowerShell 7 启动 Windows PowerShell 时可能继承不同的模块路径。
+Import-Module (Join-Path $PSHOME 'Modules\Microsoft.PowerShell.Utility') -ErrorAction Stop
 $RepoPrefix = '/WSGsety/rebuild-codex-desktop/releases/download/'
 
 function Resolve-ProgramPath([string]$Root, [string]$Relative) {
