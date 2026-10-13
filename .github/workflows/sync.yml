@@ -153,31 +153,15 @@ jobs:
           CODEX_WINDOWS_PACKAGE_VERSION: ${{ steps.version.outputs.win_package_version }}
         run: npm run build:win-x64
 
-      - name: Build Windows update zip
-        id: update
-        if: steps.existing.outputs.skip == 'false'
-        env:
-          GH_TOKEN: ${{ github.token }}
-          TAG: ${{ steps.version.outputs.tag }}
-          TEMP: ${{ runner.temp }}
-          TMP: ${{ runner.temp }}
-        run: node scripts/build-windows-update.js
-
       - name: Create checksums
         if: steps.existing.outputs.skip == 'false'
         shell: bash
         env:
           ZIP_NAME: ${{ steps.version.outputs.zip_name }}
-          UPDATE_ZIP_NAME: ${{ steps.update.outputs.zip_name }}
         run: |
           cd out
           test -f "$ZIP_NAME"
-          FILES=("$ZIP_NAME")
-          if [ -n "$UPDATE_ZIP_NAME" ]; then
-            test -f "$UPDATE_ZIP_NAME"
-            FILES+=("$UPDATE_ZIP_NAME")
-          fi
-          sha256sum "${FILES[@]}" > SHA256SUMS.txt
+          sha256sum "$ZIP_NAME" > SHA256SUMS.txt
 
       - name: Publish release
         if: steps.existing.outputs.skip == 'false'
@@ -189,32 +173,15 @@ jobs:
           WIN_PACKAGE_VERSION: ${{ steps.version.outputs.win_package_version }}
           CODEX_CLI_VERSION: ${{ steps.version.outputs.codex_cli_version }}
           ZIP_NAME: ${{ steps.version.outputs.zip_name }}
-          UPDATE_ZIP_NAME: ${{ steps.update.outputs.zip_name }}
-          UPDATE_BASE_TAG: ${{ steps.update.outputs.base_tag }}
-          UPDATE_REASON: ${{ steps.update.outputs.reason }}
         run: |
           RELEASE_NOTES_PATH="$RUNNER_TEMP/codex-release-notes.txt"
           printf '基于 Microsoft Store Windows x64 安装包 %s 重新打包，App 版本为 %s，内含 Codex CLI %s。\n\n' \
             "$WIN_PACKAGE_VERSION" "$APP_VERSION" "$CODEX_CLI_VERSION" > "$RELEASE_NOTES_PATH"
-          printf '**全量包**：`%s`。首次安装、本地版本不匹配或没有可用增量时，解压到新目录，运行 `ChatGPT.exe`。\n\n' "$ZIP_NAME" >> "$RELEASE_NOTES_PATH"
+          printf '**全量包**：`%s`。解压到新目录，运行 `启动 Codex.cmd` 或 `ChatGPT.exe`。\n\n' "$ZIP_NAME" >> "$RELEASE_NOTES_PATH"
+          printf '**校验**：附件 `SHA256SUMS.txt` 列出全量 ZIP 的校验值。请以当前 Release 的附件为准。\n\n' >> "$RELEASE_NOTES_PATH"
           FILES=("out/$ZIP_NAME" out/SHA256SUMS.txt)
-          if [ -n "$UPDATE_ZIP_NAME" ]; then
-            FILES+=("out/$UPDATE_ZIP_NAME")
-            printf '**增量包**：`%s`，仅适用于 `%s`。\n\n' \
-              "$UPDATE_ZIP_NAME" "$UPDATE_BASE_TAG" >> "$RELEASE_NOTES_PATH"
-            printf '先确认程序目录中 `build-info.json` 的 App 和 CLI 版本都匹配上述旧版。完全退出程序（包括后台进程），将增量 ZIP 解压到原来包含 `ChatGPT.exe` 的目录，保留内部目录结构并选择替换全部文件，然后运行 `ChatGPT.exe`。无需更新脚本；版本不匹配请下载全量包。\n\n' >> "$RELEASE_NOTES_PATH"
-          else
-            printf '%s\n\n' "$UPDATE_REASON" >> "$RELEASE_NOTES_PATH"
-          fi
-          printf '**校验**：附件 `SHA256SUMS.txt` 列出本次实际提供的 ZIP 校验值。请以当前 Release 的附件为准。\n\n' >> "$RELEASE_NOTES_PATH"
           if gh release view "$TAG" >/dev/null 2>&1; then
             gh release edit "$TAG" --title "$TAG" --notes-file "$RELEASE_NOTES_PATH"
-            # 同一 tag 强制重建时，清掉可能指向不同基线的旧增量资产。
-            gh release view "$TAG" --json assets --jq '.assets[].name' | while IFS= read -r ASSET; do
-              case "$ASSET" in
-                Codex-win-x64-*-update-from-*.zip) gh release delete-asset "$TAG" "$ASSET" --yes ;;
-              esac
-            done
             gh release upload "$TAG" "${FILES[@]}" --clobber
           else
             gh release create "$TAG" "${FILES[@]}" \
@@ -229,8 +196,6 @@ jobs:
             process.stdin.on("end", () => {
               const release = JSON.parse(data);
               const files = [[zip, `out/${zip}`], ["SHA256SUMS.txt", "out/SHA256SUMS.txt"]];
-              const update = process.env.UPDATE_ZIP_NAME;
-              if (update) files.push([update, `out/${update}`]);
               for (const [name, file] of files) {
                 const asset = (release.assets || []).find((item) => item.name === name);
                 if (!asset || asset.size !== fs.statSync(file).size) {
