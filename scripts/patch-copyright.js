@@ -11,7 +11,7 @@
 const fs = require("fs");
 const path = require("path");
 const { parse } = require("acorn");
-const { locateBundles, relPath } = require("./patch-util");
+const { locateBundlesByContent, relPath } = require("./patch-util");
 
 // ──────────────────────────────────────────────
 //  Config
@@ -19,6 +19,15 @@ const { locateBundles, relPath } = require("./patch-util");
 
 const OLD_COPYRIGHT = "\u00A9 OpenAI"; // (c) OpenAI
 const NEW_COPYRIGHT = "\u00A9 OpenAI \u00B7 Cometix Space"; // (c) OpenAI . Cometix Space
+
+// Raw-source spellings of OLD_COPYRIGHT (literal char or escape sequences).
+// Used as a cheap pre-filter before AST parsing.
+const OLD_COPYRIGHT_RAW = [
+  OLD_COPYRIGHT,
+  "\\xa9 OpenAI",
+  "\\u00A9 OpenAI",
+  "\\u00a9 OpenAI",
+];
 
 // ──────────────────────────────────────────────
 //  AST walker
@@ -96,15 +105,19 @@ function main() {
   const isCheck = args.includes("--check");
   const platform = args.find((a) => ["mac-arm64", "mac-x64", "win"].includes(a));
 
-  const bundles = locateBundles({
+  // Upstream 26.1027.x split the main bundle into early-bootstrap-<chunk>-<hash>.js
+  // chunks (and dropped setAboutPanelOptions on Windows), so target by content
+  // marker instead of the old main-*.js filename. Absence is tolerated: on win
+  // builds the copyright property never existed, keep that a warning.
+  const bundles = locateBundlesByContent({
     dir: "build",
-    pattern: /^main(-[^.]+)?\.js$/,
     platform,
+    filter: (s) => OLD_COPYRIGHT_RAW.some((n) => s.includes(n)),
   });
 
   if (bundles.length === 0) {
-    console.error("[x] No main bundle found");
-    process.exit(1);
+    console.log("  [!] No copyright target bundles found (setAboutPanelOptions not present)");
+    return;
   }
 
   for (const bundle of bundles) {

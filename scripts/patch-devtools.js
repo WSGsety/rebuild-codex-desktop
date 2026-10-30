@@ -14,7 +14,7 @@
 const fs = require("fs");
 const path = require("path");
 const { parse } = require("acorn");
-const { locateBundles, relPath } = require("./patch-util");
+const { locateBundlesByContent, relPath } = require("./patch-util");
 
 // ──────────────────────────────────────────────
 //  AST walker
@@ -85,15 +85,20 @@ function main() {
   const isCheck = args.includes("--check");
   const platform = args.find((a) => ["mac-arm64", "mac-x64", "win"].includes(a));
 
-  const bundles = locateBundles({
+  // Upstream 26.1027.x split the main bundle into early-bootstrap-<chunk>-<hash>.js
+  // chunks, so target by content marker instead of the old main-*.js filename.
+  const bundles = locateBundlesByContent({
     dir: "build",
-    pattern: /^main(-[^.]+)?\.js$/,
     platform,
+    filter: (s) =>
+      s.includes("allowInspectElement") ||
+      s.includes("allowDevtools") ||
+      s.includes("allowDevTools"),
   });
 
   if (bundles.length === 0) {
-    console.error("[x] No main bundle found");
-    process.exit(1);
+    console.log("  [!] No devtools target bundles found (upstream layout may have changed)");
+    return;
   }
 
   for (const bundle of bundles) {

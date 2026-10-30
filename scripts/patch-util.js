@@ -76,10 +76,71 @@ function locateBundles({ dir, pattern, platform }) {
 }
 
 /**
+ * Locate bundles by content marker across platform directories.
+ *
+ * Robust against upstream bundle renames (e.g. 26.1027.x moved the main
+ * process code from main-*.js into early-bootstrap-<chunk>-<hash>.js):
+ * scans every .js file and keeps those whose source passes `filter`.
+ *
+ * @param {object} opts
+ * @param {"build"|"assets"} [opts.dir="build"] - Subdirectory type (same map as locateBundles)
+ * @param {string} [opts.platform] - Restrict to a single platform
+ * @param {(source: string) => boolean} opts.filter - Cheap content predicate for candidate selection
+ * @returns {Array<{platform: string, path: string}>}
+ */
+function locateBundlesByContent({ dir = "build", platform, filter }) {
+  const dirMap = {
+    build: (plat) => path.join(SRC_DIR, plat, "_asar", ".vite", "build"),
+    assets: (plat) => path.join(SRC_DIR, plat, "_asar", "webview", "assets"),
+  };
+
+  // Legacy fallback paths (flat src/ without _asar subdirs)
+  const legacyMap = {
+    build: path.join(SRC_DIR, ".vite", "build"),
+    assets: path.join(SRC_DIR, "webview", "assets"),
+  };
+
+  const getDir = dirMap[dir];
+  if (!getDir) throw new Error(`Unknown dir type: ${dir}`);
+
+  const ALL_PLATFORMS = ["mac-arm64", "mac-x64", "win"];
+  const platforms = platform
+    ? [platform]
+    : ALL_PLATFORMS.filter((p) => fs.existsSync(getDir(p)));
+
+  const scan = (d) => {
+    const hits = [];
+    if (!fs.existsSync(d)) return hits;
+    for (const f of fs.readdirSync(d)) {
+      if (!f.endsWith(".js")) continue;
+      const fp = path.join(d, f);
+      if (filter(fs.readFileSync(fp, "utf-8"))) hits.push(fp);
+    }
+    return hits;
+  };
+
+  // Legacy fallback
+  if (platforms.length === 0) {
+    const fallback = legacyMap[dir];
+    return fallback
+      ? scan(fallback).map((p) => ({ platform: "legacy", path: p }))
+      : [];
+  }
+
+  const results = [];
+  for (const plat of platforms) {
+    for (const p of scan(getDir(plat))) {
+      results.push({ platform: plat, path: p });
+    }
+  }
+  return results;
+}
+
+/**
  * Return path relative to project root.
  */
 function relPath(absPath) {
   return path.relative(PROJECT_ROOT, absPath);
 }
 
-module.exports = { locateBundles, relPath, SRC_DIR, PROJECT_ROOT };
+module.exports = { locateBundles, locateBundlesByContent, relPath, SRC_DIR, PROJECT_ROOT };
