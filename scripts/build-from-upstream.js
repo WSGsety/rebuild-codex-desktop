@@ -157,9 +157,9 @@ function resolveWindowsCodexBundle(version) {
   clearDir(tempDir);
 
   console.log(`   [codex] fetching ${packageSpec}`);
-  // CLI 大包只在本轮使用，避免污染 setup-node 的小型工具依赖缓存。
+  // CI 的 CLI 大包不进入 setup-node 缓存，本地仍复用 npm 下载缓存。
   const packed = JSON.parse(execNpm(["pack", packageSpec, "--pack-destination", tempDir,
-    "--cache", path.join(tempDir, "npm-cache"), "--json"], {
+    ...(process.env.CI ? ["--cache", path.join(tempDir, "npm-cache")] : []), "--json"], {
     cwd: tempDir,
     encoding: "utf-8",
     stdio: ["ignore", "pipe", "pipe"],

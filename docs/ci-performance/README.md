@@ -33,13 +33,33 @@
 
 19 项测试通过，包含原有 17 项及路径判断、重复构建失效回归。覆盖同大小/时间戳修改、版本变化、新增文件、产物损坏/缺失、缓存记录损坏。
 
-真实上游 MSIX `26.1103.3517.0`、App `26.1103.31037`、CLI `0.167.0`：第一轮连续构建 110.719 秒 / 4.426 秒；快速压缩后的最终代码为 30.750 秒 / 4.424 秒。独立快速 ZIP 压缩 15.364 秒。Mac 本地只能检查 Windows PE/哈希/内容，Windows 可执行文件的 `--version`、`app-server --help` 由真实 Windows Actions 执行。
+真实上游 MSIX `26.1103.3517.0`、App `26.1103.31037`、CLI `0.167.0`：第一轮连续构建 110.719 秒 / 4.426 秒；快速压缩后为 30.750 秒 / 4.424 秒；最后一版本地复测为 33.715 秒 / 4.844 秒（CLI 下载缓存命中）。独立快速 ZIP 压缩 15.364 秒。Mac 本地只能检查 Windows PE/哈希/内容，Windows 可执行文件的 `--version`、`app-server --help` 由真实 Windows Actions 执行。
 
 actionlint 1.7.12 的预编译二进制及 SHA256 已验证。该版本尚不认识 GitHub 新增的 `queue` 属性，只排除这个特定诊断，其余检查通过；GitHub 已接受并成功执行含此属性的工作流。
 
 ## 线上复测
 
-第一轮：[42241276792](https://github.com/WSGsety/rebuild-codex-desktop/actions/runs/42241276792) 成功，Windows 依赖安装 4 秒，MSIX 保存 6 秒。第二轮正在验证快速压缩和缓存命中，最终数字在完成后补齐。测试分支不发布或覆盖正式 Release。
+所有完整验证运行均保留 Windows PE/哈希检查、CLI `--version` 和 `app-server --help`、7 组补丁及成品 SHA256。测试分支不发布或覆盖正式 Release。
+
+| 样本 | 总耗时 | Windows job | Windows ZIP 步骤 | 状态 |
+| --- | ---: | ---: | ---: | --- |
+| 修改前 17 次完整发布中位数 | 450 秒 | 446 秒 | 120 秒 | 成功 |
+| 同一批历史运行扣除各自发布步骤后中位数 | 414 秒 | — | — | 仅用于缩小口径差异 |
+| 第一轮冷缓存 [42241276792](https://github.com/WSGsety/rebuild-codex-desktop/actions/runs/42241276792) | 252 秒 | 222 秒 | 140 秒 | 成功 |
+| 第二轮热缓存 [42241842037](https://github.com/WSGsety/rebuild-codex-desktop/actions/runs/42241842037) | 163 秒 | 140 秒 | 56 秒 | 成功 |
+| 第二轮 PR 冷 MSIX 缓存 [42241925848](https://github.com/WSGsety/rebuild-codex-desktop/actions/runs/42241925848) | 159 秒 | 133 秒 | 54 秒 | 成功 |
+| 缓存进一步收敛 [42242655010](https://github.com/WSGsety/rebuild-codex-desktop/actions/runs/42242655010) | 212 秒 | 138 秒 | 58 秒 | 成功；含 53 秒等待旧运行取消 |
+| 纯文档 PR [42242997368](https://github.com/WSGsety/rebuild-codex-desktop/actions/runs/42242997368) | 16 秒 | 跳过 | 跳过 | CI 成功 |
+
+近似可比的历史基线 414 秒到第二轮 163 秒，减少约 60.6%；不能把原始 450 秒直接与未发布运行相比宣称纯提速 63.8%。优化前后的上游版本不同，GitHub 主机和网络也不固定，样本仍不足以承诺每次都达到此数字。同一上游版本的两轮 ZIP 步骤 140 → 56 秒（减少 60%）证据更直接。
+
+同 PR 连续推送的旧运行 [42242367066](https://github.com/WSGsety/rebuild-codex-desktop/actions/runs/42242367066) 已自动取消，新运行继续成功。取消不是瞬时完成：该次新 run 到 preflight 创建前等待了 53 秒，已计入总耗时，不能只报告 job 的 runner 排队时间。main 的每次运行分组由配置保证，未为测试直接往 main 连续推送。
+
+[复测逐 job 数据](after-jobs.csv)、[复测逐步骤数据](after-steps.csv) 中 `wait_before_job_s` 是 workflow 创建到 job 创建的时间，包含依赖等待和并发取消等待；后续 job 该值不能累加作为整体排队。
+
+缓存进一步收敛后，Windows npm 缓存样本为 75,281 字节（先前 182,241,805 字节）；MSIX 单份为 1,056,154,258 字节，旧格式最新单份为 4,079,554,215 字节，缩小约 74.1%。热 MSIX 的恢复 12 秒 + 同步 29 秒，冷下载同步 36 秒 + 保存 6 秒，当前样本总成本接近，因此没有扩大缓存范围，也没有缓存解压文件。保留压缩包缓存用于重复构建及 CDN 波动时复用。
+
+关闭并清理了仅用于验证的文档 PR/分支；最终改动通过主优化 PR 交付。
 
 ## 缓存复查与配置依据
 
@@ -48,3 +68,5 @@ actionlint 1.7.12 的预编译二进制及 SHA256 已验证。该版本尚不认
 配置依据：[GitHub 并发及 queue](https://docs.github.com/en/actions/how-tos/write-workflows/choose-when-workflows-run/control-workflow-concurrency)、[路径跳过与 Pending 检查](https://docs.github.com/en/actions/how-tos/manage-workflow-runs/skip-workflow-runs)、[setup-node 缓存说明](https://github.com/actions/setup-node)。
 
 未改动根目录开发依赖版本。工具依赖审计仍报告 3 项 moderate（ASAR 的 glob/minimatch 传递依赖），未提供直接修复；本次未扩大为依赖升级任务。生产 Release 上传覆盖及 macOS DMG 构建不在本次分支实测范围。
+
+一次本地冷下载对照耗时 241.669 秒，其中 npm 下载 CLI 用了 208.497 秒；第二次为 4.987 秒。发现这会拖慢后续本地改动构建后，最终仅在 CI 隔离 CLI 缓存，本地继续复用标准 npm 缓存。没有把这次网络异常样本删去或混入热缓存提速结论。

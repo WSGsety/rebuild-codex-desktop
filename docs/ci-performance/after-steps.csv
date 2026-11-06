@@ -1,0 +1,163 @@
+run_id,job,step,conclusion,seconds,category
+42241276792,preflight,Set up job,success,1.0,准备/收尾
+42241276792,preflight,Run actions/checkout@v5,success,1.0,准备/收尾
+42241276792,preflight,Detect code changes,success,1.0,执行
+42241276792,preflight,Setup Node.js,success,1.0,准备/收尾
+42241276792,preflight,Install packaging dependencies,success,1.0,准备/收尾
+42241276792,preflight,Test packaging scripts,success,0,执行
+42241276792,preflight,Early skip check,success,4.0,执行
+42241276792,preflight,Post Setup Node.js,success,1.0,准备/收尾
+42241276792,preflight,Post Run actions/checkout@v5,success,1.0,准备/收尾
+42241276792,preflight,Complete job,success,0,准备/收尾
+42241276792,build-windows,Set up job,success,1.0,准备/收尾
+42241276792,build-windows,Checkout,success,5.0,准备/收尾
+42241276792,build-windows,Setup Node.js,success,6.0,准备/收尾
+42241276792,build-windows,Install packaging dependencies,success,4.0,准备/收尾
+42241276792,build-windows,Ensure 7-Zip alias,success,1.0,准备/收尾
+42241276792,build-windows,Cache upstream MSIX,success,0,准备/收尾
+42241276792,build-windows,Sync upstream Windows app,success,36.0,准备/收尾
+42241276792,build-windows,Read packaged app and CLI versions,success,0,执行
+42241276792,build-windows,Check existing app-version release,success,5.0,执行
+42241276792,build-windows,Patch app,success,6.0,执行
+42241276792,build-windows,Build Windows zip,success,140.0,执行
+42241276792,build-windows,Create checksums,success,4.0,执行
+42241276792,build-windows,Publish release,skipped,0,执行
+42241276792,build-windows,Post Cache upstream MSIX,success,6.0,准备/收尾
+42241276792,build-windows,Post Setup Node.js,success,3.0,准备/收尾
+42241276792,build-windows,Post Checkout,success,2.0,准备/收尾
+42241276792,build-windows,Complete job,success,0,准备/收尾
+42241276792,CI,Set up job,success,0,准备/收尾
+42241276792,CI,Require successful checks,success,0,执行
+42241276792,CI,Complete job,success,0,准备/收尾
+42241842037,preflight,Set up job,success,1.0,准备/收尾
+42241842037,preflight,Run actions/checkout@v5,success,2.0,准备/收尾
+42241842037,preflight,Detect code changes,success,0,执行
+42241842037,preflight,Setup Node.js,success,1.0,准备/收尾
+42241842037,preflight,Install packaging dependencies,success,1.0,准备/收尾
+42241842037,preflight,Test packaging scripts,success,1.0,执行
+42241842037,preflight,Early skip check,success,0,执行
+42241842037,preflight,Post Setup Node.js,success,1.0,准备/收尾
+42241842037,preflight,Post Run actions/checkout@v5,success,0,准备/收尾
+42241842037,preflight,Complete job,success,0,准备/收尾
+42241842037,build-windows,Set up job,success,1.0,准备/收尾
+42241842037,build-windows,Checkout,success,8.0,准备/收尾
+42241842037,build-windows,Setup Node.js,success,9.0,准备/收尾
+42241842037,build-windows,Install packaging dependencies,success,7.0,准备/收尾
+42241842037,build-windows,Ensure 7-Zip alias,success,1.0,准备/收尾
+42241842037,build-windows,Cache upstream MSIX,success,12.0,准备/收尾
+42241842037,build-windows,Sync upstream Windows app,success,29.0,准备/收尾
+42241842037,build-windows,Read packaged app and CLI versions,success,1.0,执行
+42241842037,build-windows,Check existing app-version release,success,0,执行
+42241842037,build-windows,Patch app,success,6.0,执行
+42241842037,build-windows,Build Windows zip,success,56.0,执行
+42241842037,build-windows,Create checksums,success,4.0,执行
+42241842037,build-windows,Publish release,skipped,0,执行
+42241842037,build-windows,Post Cache upstream MSIX,success,0,准备/收尾
+42241842037,build-windows,Post Setup Node.js,success,1.0,准备/收尾
+42241842037,build-windows,Post Checkout,success,2.0,准备/收尾
+42241842037,build-windows,Complete job,success,0,准备/收尾
+42241842037,CI,Set up job,success,0,准备/收尾
+42241842037,CI,Require successful checks,success,0,执行
+42241842037,CI,Complete job,success,0,准备/收尾
+42241925848,preflight,Set up job,success,0,准备/收尾
+42241925848,preflight,Run actions/checkout@v5,success,1.0,准备/收尾
+42241925848,preflight,Detect code changes,success,3.0,执行
+42241925848,preflight,Setup Node.js,success,1.0,准备/收尾
+42241925848,preflight,Install packaging dependencies,success,2.0,准备/收尾
+42241925848,preflight,Test packaging scripts,success,1.0,执行
+42241925848,preflight,Early skip check,success,1.0,执行
+42241925848,preflight,Post Setup Node.js,success,1.0,准备/收尾
+42241925848,preflight,Post Run actions/checkout@v5,success,1.0,准备/收尾
+42241925848,preflight,Complete job,success,0,准备/收尾
+42241925848,build-windows,Set up job,success,1.0,准备/收尾
+42241925848,build-windows,Checkout,success,5.0,准备/收尾
+42241925848,build-windows,Setup Node.js,success,7.0,准备/收尾
+42241925848,build-windows,Install packaging dependencies,success,5.0,准备/收尾
+42241925848,build-windows,Ensure 7-Zip alias,success,1.0,准备/收尾
+42241925848,build-windows,Cache upstream MSIX,success,0,准备/收尾
+42241925848,build-windows,Sync upstream Windows app,success,35.0,准备/收尾
+42241925848,build-windows,Read packaged app and CLI versions,success,0,执行
+42241925848,build-windows,Check existing app-version release,success,0,执行
+42241925848,build-windows,Patch app,success,7.0,执行
+42241925848,build-windows,Build Windows zip,success,54.0,执行
+42241925848,build-windows,Create checksums,success,4.0,执行
+42241925848,build-windows,Publish release,skipped,0,执行
+42241925848,build-windows,Post Cache upstream MSIX,success,6.0,准备/收尾
+42241925848,build-windows,Post Setup Node.js,success,3.0,准备/收尾
+42241925848,build-windows,Post Checkout,success,2.0,准备/收尾
+42241925848,build-windows,Complete job,success,0,准备/收尾
+42241925848,CI,Set up job,success,0,准备/收尾
+42241925848,CI,Require successful checks,success,0,执行
+42241925848,CI,Complete job,success,0,准备/收尾
+42242367066,preflight,Set up job,success,0,准备/收尾
+42242367066,preflight,Run actions/checkout@v5,success,1.0,准备/收尾
+42242367066,preflight,Detect code changes,success,0,执行
+42242367066,preflight,Setup Node.js,success,2.0,准备/收尾
+42242367066,preflight,Install packaging dependencies,success,1.0,准备/收尾
+42242367066,preflight,Test packaging scripts,success,0,执行
+42242367066,preflight,Early skip check,success,2.0,执行
+42242367066,preflight,Post Setup Node.js,success,1.0,准备/收尾
+42242367066,preflight,Post Run actions/checkout@v5,success,0,准备/收尾
+42242367066,preflight,Complete job,success,0,准备/收尾
+42242367066,build-windows,Set up job,success,2.0,准备/收尾
+42242367066,build-windows,Checkout,success,6.0,准备/收尾
+42242367066,build-windows,Setup Node.js,success,13.0,准备/收尾
+42242367066,build-windows,Install packaging dependencies,success,6.0,准备/收尾
+42242367066,build-windows,Ensure 7-Zip alias,success,0,准备/收尾
+42242367066,build-windows,Cache upstream MSIX,success,13.0,准备/收尾
+42242367066,build-windows,Sync upstream Windows app,success,31.0,准备/收尾
+42242367066,build-windows,Read packaged app and CLI versions,success,0,执行
+42242367066,build-windows,Check existing app-version release,success,0,执行
+42242367066,build-windows,Patch app,success,7.0,执行
+42242367066,build-windows,Build Windows zip,success,52.0,执行
+42242367066,build-windows,Create checksums,success,4.0,执行
+42242367066,build-windows,Publish release,skipped,0,执行
+42242367066,build-windows,Post Cache upstream MSIX,success,0,准备/收尾
+42242367066,build-windows,Post Setup Node.js,success,0,准备/收尾
+42242367066,build-windows,Post Checkout,success,2.0,准备/收尾
+42242367066,build-windows,Complete job,success,0,准备/收尾
+42242367066,CI,Set up job,success,0,准备/收尾
+42242367066,CI,Require successful checks,failure,0,执行
+42242367066,CI,Complete job,success,0,准备/收尾
+42242655010,preflight,Set up job,success,1.0,准备/收尾
+42242655010,preflight,Run actions/checkout@v5,success,1.0,准备/收尾
+42242655010,preflight,Detect code changes,success,0,执行
+42242655010,preflight,Setup Node.js,success,2.0,准备/收尾
+42242655010,preflight,Install packaging dependencies,success,1.0,准备/收尾
+42242655010,preflight,Test packaging scripts,success,0,执行
+42242655010,preflight,Early skip check,success,2.0,执行
+42242655010,preflight,Post Setup Node.js,success,0,准备/收尾
+42242655010,preflight,Post Run actions/checkout@v5,success,1.0,准备/收尾
+42242655010,preflight,Complete job,success,0,准备/收尾
+42242655010,build-windows,Set up job,success,1.0,准备/收尾
+42242655010,build-windows,Checkout,success,8.0,准备/收尾
+42242655010,build-windows,Setup Node.js,success,8.0,准备/收尾
+42242655010,build-windows,Install packaging dependencies,success,5.0,准备/收尾
+42242655010,build-windows,Ensure 7-Zip alias,success,0,准备/收尾
+42242655010,build-windows,Cache upstream MSIX,success,15.0,准备/收尾
+42242655010,build-windows,Sync upstream Windows app,success,29.0,准备/收尾
+42242655010,build-windows,Read packaged app and CLI versions,success,0,执行
+42242655010,build-windows,Check existing app-version release,success,0,执行
+42242655010,build-windows,Patch app,success,5.0,执行
+42242655010,build-windows,Build Windows zip,success,58.0,执行
+42242655010,build-windows,Create checksums,success,3.0,执行
+42242655010,build-windows,Publish release,skipped,0,执行
+42242655010,build-windows,Post Cache upstream MSIX,success,0,准备/收尾
+42242655010,build-windows,Post Setup Node.js,success,1.0,准备/收尾
+42242655010,build-windows,Post Checkout,success,2.0,准备/收尾
+42242655010,build-windows,Complete job,success,0,准备/收尾
+42242655010,CI,Set up job,success,0,准备/收尾
+42242655010,CI,Require successful checks,success,0,执行
+42242655010,CI,Complete job,success,0,准备/收尾
+42242997368,preflight,Set up job,success,1.0,准备/收尾
+42242997368,preflight,Run actions/checkout@v5,success,1.0,准备/收尾
+42242997368,preflight,Detect code changes,success,1.0,执行
+42242997368,preflight,Setup Node.js,skipped,0,准备/收尾
+42242997368,preflight,Install packaging dependencies,skipped,0,准备/收尾
+42242997368,preflight,Test packaging scripts,skipped,0,执行
+42242997368,preflight,Early skip check,skipped,0,执行
+42242997368,preflight,Post Run actions/checkout@v5,success,0,准备/收尾
+42242997368,preflight,Complete job,success,0,准备/收尾
+42242997368,CI,Set up job,success,0,准备/收尾
+42242997368,CI,Require successful checks,success,1.0,执行
+42242997368,CI,Complete job,success,0,准备/收尾
