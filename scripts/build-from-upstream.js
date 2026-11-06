@@ -484,8 +484,7 @@ async function buildWin(platform) {
   }, null, 2) + "\n");
   fs.rmSync(zipPath, { force: true });
   console.log(`   [zip] ${zipName}`);
-  // 加深匹配但不增加压缩轮数，接近高档体积并保持标准 Deflate 兼容性。
-  execSync(`7zz a -tzip -mm=Deflate -mx=5 -mfb=128 "${zipPath}" .`, { cwd: outApp });
+  execSync(`7zz a -tzip -mx=5 "${zipPath}" .`, { cwd: outApp });
   if (input) saveBuild(stamp, input, zipPath);
 
   const sizeMB = (fs.statSync(zipPath).size / 1048576).toFixed(1);
