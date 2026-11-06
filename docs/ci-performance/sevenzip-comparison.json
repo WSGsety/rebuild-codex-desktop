@@ -1,0 +1,44 @@
+{
+  "release": "v26.1029.70936-cli-0.167.0",
+  "source_zip_bytes": 1007388410,
+  "source_zip_sha256": "c3b3bbf8603846ef4b9e61afd6b01d04c574e37ebc05dd479399ae3dd92ee4e6",
+  "file_count": 3691,
+  "directory_count": 566,
+  "tool": "7-Zip (z) 26.05 (arm64) : Copyright (c) 1999-2026 Igor Pavlov : 2026-10-21",
+  "results": [
+    {
+      "level": 3,
+      "artifact": "Codex-win-x64-26.1029.70936-cli-0.167.0-lzma2-3.7z",
+      "bytes": 831251899,
+      "compression_seconds": 29.088,
+      "extraction_seconds": 2.972,
+      "sha256": "1f67f8f9eea427f51a8e261bb3476e7cbc44474299882d2d9f0e5b0d17578fb1",
+      "properties": {
+        "Method": "Delta LZMA2:22 BCJ",
+        "Solid": "+",
+        "Blocks": "5"
+      },
+      "all_files_sha256_match": true
+    },
+    {
+      "level": 5,
+      "artifact": "Codex-win-x64-26.1029.70936-cli-0.167.0-lzma2-5.7z",
+      "bytes": 709447217,
+      "compression_seconds": 118.957,
+      "extraction_seconds": 3.516,
+      "sha256": "1aab7e7212246a426dc33fa25a046f72f115af8bc772d3bee4ba2632bbdbbed8",
+      "properties": {
+        "Method": "Delta LZMA2:25 BCJ",
+        "Solid": "+",
+        "Blocks": "3"
+      },
+      "all_files_sha256_match": true
+    }
+  ],
+  "zip_reference": {
+    "bytes": 1007388410,
+    "compression_seconds": 56.44,
+    "all_entries_match_original": true,
+    "command": "7zz a -tzip -mx=5 zip-reference.zip ."
+  }
+}

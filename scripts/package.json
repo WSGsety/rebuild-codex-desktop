@@ -1,0 +1,10 @@
+{
+  "name": "codex-packaging-scripts",
+  "private": true,
+  "description": "上游重打包只需解析器和 ASAR 工具，运行时原生模块沿用上游",
+  "dependencies": {
+    "@electron/asar": "4.2.0",
+    "acorn": "8.16.0",
+    "fast-xml-parser": "5.7.3"
+  }
+}

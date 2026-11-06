@@ -1,6 +1,9 @@
 name: Build Codex Desktop for Windows
 
 on:
+  push:
+    branches: [main]
+  pull_request:
   schedule:
     # 单档 UTC 21:43（北京 05:43）。schedule 调度队列在 UTC 午夜前后实测积压
     # 2~3.6 小时（cron 23:43 时实际创建 run 在 01:39~03:20 UTC），整体前移后
@@ -19,17 +22,62 @@ on:
         default: false
 
 permissions:
-  contents: write
+  contents: read
 
 env:
   NODE_VERSION: "24"
 
 concurrency:
-  group: codex-desktop-windows-release
-  cancel-in-progress: false
+  # main 每次运行使用独立组，避免默认并发组替换等待中的提交。
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.run_id }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
+  preflight:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    outputs:
+      build: ${{ steps.early.outputs.skip == 'false' }}
+      msix_version: ${{ steps.early.outputs.msix_version }}
+      cli_version: ${{ steps.early.outputs.cli_version }}
+    steps:
+      - uses: actions/checkout@v5
+      # 不在 workflow 级使用 paths-ignore，保证文档 PR 的必需检查也能结束。
+      - name: Detect code changes
+        id: changes
+        run: node scripts/ci-changes.js
+      - name: Setup Node.js
+        if: steps.changes.outputs.run == 'true'
+        uses: actions/setup-node@v5
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+          cache-dependency-path: scripts/package-lock.json
+      - name: Install packaging dependencies
+        if: steps.changes.outputs.run == 'true'
+        run: npm ci --prefix scripts --ignore-scripts
+      - name: Test packaging scripts
+        if: steps.changes.outputs.run == 'true'
+        run: npm test
+      - name: Early skip check
+        if: steps.changes.outputs.run == 'true'
+        id: early
+        env:
+          GH_TOKEN: ${{ github.token }}
+          # 代码提交必须完整打包验证，只有定时/手动发版可以按版本跳过。
+          FORCE_BUILD: ${{ inputs.force_build || github.event_name == 'push' || github.event_name == 'pull_request' }}
+        run: node scripts/check-windows-skip.js
+
   build-windows:
+    needs: preflight
+    if: needs.preflight.outputs.build == 'true'
+    permissions:
+      contents: write
+    # 发版串行且保留等待队列；普通验证运行各自独立。
+    concurrency:
+      group: windows-${{ github.ref == 'refs/heads/main' && (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') && 'release' || github.run_id }}
+      cancel-in-progress: false
+      queue: max
     runs-on: windows-latest
     timeout-minutes: 30
     steps:
@@ -41,9 +89,10 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: npm
+          cache-dependency-path: scripts/package-lock.json
 
-      - name: Install dependencies
-        run: npm ci
+      - name: Install packaging dependencies
+        run: npm ci --prefix scripts --ignore-scripts
 
       - name: Ensure 7-Zip alias
         run: |
@@ -51,29 +100,14 @@ jobs:
           Copy-Item "C:\Program Files\7-Zip\7z.exe" "C:\Program Files\7-Zip\7zz.exe"
           echo "C:\Program Files\7-Zip" | Out-File -Append -Encoding utf8 $env:GITHUB_PATH
 
-      - name: Test packaging scripts
-        run: npm test
-
-      # 轻量探测：只查商店元数据 + npm CLI 版本 + Release 标记，不下载 MSIX。
-      # 版本都没变时本轮直接跳过，无变更日不再触碰商店 CDN。
-      - name: Early skip check
-        id: early
-        env:
-          GH_TOKEN: ${{ github.token }}
-          FORCE_BUILD: ${{ inputs.force_build }}
-        run: node scripts/check-windows-skip.js
-
       - name: Cache upstream MSIX
-        if: steps.early.outputs.skip == 'false'
         uses: actions/cache@v5
         with:
-          path: ${{ runner.temp }}/codex-sync
-          key: codex-msix-${{ steps.early.outputs.msix_version }}
-          restore-keys: |
-            codex-msix-
+          # 只保存当前压缩包，不保存随后会被清空的解压目录或旧版本。
+          path: ${{ runner.temp }}/codex-sync/*.msix
+          key: codex-msix-archive-v1-${{ needs.preflight.outputs.msix_version }}
 
       - name: Sync upstream Windows app
-        if: steps.early.outputs.skip == 'false'
         env:
           # runner.temp 与 node os.tmpdir() 默认不一致（D:\a\_temp vs C:\Users\...\Temp），
           # 统一后下载与 actions/cache 才能落在同一目录
@@ -82,36 +116,42 @@ jobs:
         run: node scripts/sync-upstream.js --force --skip-mac
 
       - name: Read packaged app and CLI versions
-        if: steps.early.outputs.skip == 'false'
         id: version
         shell: bash
         run: |
           APP_VERSION=$(node -e "const fs=require('fs');const p='src/win/_asar/package.json';const pkg=JSON.parse(fs.readFileSync(p,'utf8'));process.stdout.write(pkg.version||'')")
           WIN_PACKAGE_VERSION=$(node -e "const fs=require('fs');const p='scripts/.versions.json';const v=JSON.parse(fs.readFileSync(p,'utf8'));process.stdout.write(v.win?.version||'')")
-          CODEX_CLI_VERSION=$(npm view @openai/codex version --json | node -e "let d='';process.stdin.on('data',c=>d+=c);process.stdin.on('end',()=>process.stdout.write(JSON.parse(d)))")
+          CODEX_CLI_VERSION="${{ needs.preflight.outputs.cli_version }}"
           if [ -z "$APP_VERSION" ] || [ -z "$WIN_PACKAGE_VERSION" ] || [ -z "$CODEX_CLI_VERSION" ]; then
             echo "No complete Windows app and Codex CLI version set detected"
+            exit 1
+          fi
+          if [ "$WIN_PACKAGE_VERSION" != "${{ needs.preflight.outputs.msix_version }}" ]; then
+            echo "Store version changed during build; retry to avoid saving under the wrong cache key"
             exit 1
           fi
           echo "app_version=$APP_VERSION" >> "$GITHUB_OUTPUT"
           echo "win_package_version=$WIN_PACKAGE_VERSION" >> "$GITHUB_OUTPUT"
           echo "codex_cli_version=$CODEX_CLI_VERSION" >> "$GITHUB_OUTPUT"
           echo "tag=v$APP_VERSION-cli-$CODEX_CLI_VERSION" >> "$GITHUB_OUTPUT"
-          echo "zip_name=Codex-win-x64-$APP_VERSION-cli-$CODEX_CLI_VERSION.zip" >> "$GITHUB_OUTPUT"
+          echo "archive_name=Codex-win-x64-$APP_VERSION-cli-$CODEX_CLI_VERSION.7z" >> "$GITHUB_OUTPUT"
 
       - name: Check existing app-version release
         id: existing
-        if: steps.early.outputs.skip == 'false'
         shell: bash
         env:
           GH_TOKEN: ${{ github.token }}
           TAG: ${{ steps.version.outputs.tag }}
           CODEX_CLI_VERSION: ${{ steps.version.outputs.codex_cli_version }}
-          ZIP_NAME: ${{ steps.version.outputs.zip_name }}
+          ARCHIVE_NAME: ${{ steps.version.outputs.archive_name }}
         run: |
+          if [ "${{ inputs.force_build || github.event_name == 'push' || github.event_name == 'pull_request' }}" = "true" ]; then
+            echo "skip=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
           EXISTING_RELEASE="$(
             gh api "repos/$GITHUB_REPOSITORY/releases?per_page=100" | node -e '
-              const { CODEX_CLI_VERSION: cli, TAG: tag, ZIP_NAME: zip } = process.env;
+              const { CODEX_CLI_VERSION: cli, TAG: tag, ARCHIVE_NAME: archive } = process.env;
               const marker = `<!-- codex-cli-version:${cli} -->`;
               let data = "";
               process.stdin.on("data", (chunk) => data += chunk);
@@ -121,7 +161,7 @@ jobs:
                   const assets = new Set((release.assets || []).map((asset) => asset.name));
                   return release.tag_name === tag &&
                     release.body?.includes(marker) &&
-                    assets.has(zip) &&
+                    assets.has(archive) &&
                     assets.has("SHA256SUMS.txt");
                 });
                 if (hit) process.stdout.write(hit.tag_name);
@@ -131,20 +171,16 @@ jobs:
           if [ -n "$EXISTING_RELEASE" ]; then
             echo "skip=true" >> "$GITHUB_OUTPUT"
             echo "existing_release=$EXISTING_RELEASE" >> "$GITHUB_OUTPUT"
-            echo "$ZIP_NAME already exists in $EXISTING_RELEASE"
+            echo "$ARCHIVE_NAME already exists in $EXISTING_RELEASE"
           else
             echo "skip=false" >> "$GITHUB_OUTPUT"
-          fi
-          if [ "${{ inputs.force_build }}" = "true" ]; then
-            echo "skip=false" >> "$GITHUB_OUTPUT"
-            echo "force_build requested; rebuilding"
           fi
 
       - name: Patch app
         if: steps.existing.outputs.skip == 'false'
         run: node scripts/patch-all.js win
 
-      - name: Build Windows zip
+      - name: Build Windows 7z
         if: steps.existing.outputs.skip == 'false'
         env:
           TEMP: ${{ runner.temp }}
@@ -157,14 +193,14 @@ jobs:
         if: steps.existing.outputs.skip == 'false'
         shell: bash
         env:
-          ZIP_NAME: ${{ steps.version.outputs.zip_name }}
+          ARCHIVE_NAME: ${{ steps.version.outputs.archive_name }}
         run: |
           cd out
-          test -f "$ZIP_NAME"
-          sha256sum "$ZIP_NAME" > SHA256SUMS.txt
+          test -f "$ARCHIVE_NAME"
+          sha256sum "$ARCHIVE_NAME" > SHA256SUMS.txt
 
       - name: Publish release
-        if: steps.existing.outputs.skip == 'false'
+        if: steps.existing.outputs.skip == 'false' && github.ref == 'refs/heads/main' && (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch')
         shell: bash
         env:
           GH_TOKEN: ${{ github.token }}
@@ -172,14 +208,14 @@ jobs:
           APP_VERSION: ${{ steps.version.outputs.app_version }}
           WIN_PACKAGE_VERSION: ${{ steps.version.outputs.win_package_version }}
           CODEX_CLI_VERSION: ${{ steps.version.outputs.codex_cli_version }}
-          ZIP_NAME: ${{ steps.version.outputs.zip_name }}
+          ARCHIVE_NAME: ${{ steps.version.outputs.archive_name }}
         run: |
           RELEASE_NOTES_PATH="$RUNNER_TEMP/codex-release-notes.txt"
           printf '基于 Microsoft Store Windows x64 安装包 %s 重新打包，App 版本为 %s，内含 Codex CLI %s。\n\n' \
             "$WIN_PACKAGE_VERSION" "$APP_VERSION" "$CODEX_CLI_VERSION" > "$RELEASE_NOTES_PATH"
-          printf '**全量包**：`%s`。解压到新目录，运行 `启动 Codex.cmd` 或 `ChatGPT.exe`。\n\n' "$ZIP_NAME" >> "$RELEASE_NOTES_PATH"
-          printf '**校验**：附件 `SHA256SUMS.txt` 列出全量 ZIP 的校验值。请以当前 Release 的附件为准。\n\n' >> "$RELEASE_NOTES_PATH"
-          FILES=("out/$ZIP_NAME" out/SHA256SUMS.txt)
+          printf '**全量包**：`%s`。使用 7-Zip 或兼容工具完整解压到新目录，运行 `启动 Codex.cmd` 或 `ChatGPT.exe`。\n\n' "$ARCHIVE_NAME" >> "$RELEASE_NOTES_PATH"
+          printf '**校验**：附件 `SHA256SUMS.txt` 列出全量 7z 的校验值。请以当前 Release 的附件为准。\n\n' >> "$RELEASE_NOTES_PATH"
+          FILES=("out/$ARCHIVE_NAME" out/SHA256SUMS.txt)
           if gh release view "$TAG" >/dev/null 2>&1; then
             gh release edit "$TAG" --title "$TAG" --notes-file "$RELEASE_NOTES_PATH"
             gh release upload "$TAG" "${FILES[@]}" --clobber
@@ -190,12 +226,12 @@ jobs:
           fi
           gh api "repos/$GITHUB_REPOSITORY/releases/tags/$TAG" | node -e '
             const fs = require("fs");
-            const zip = process.env.ZIP_NAME;
+            const archive = process.env.ARCHIVE_NAME;
             let data = "";
             process.stdin.on("data", (chunk) => data += chunk);
             process.stdin.on("end", () => {
               const release = JSON.parse(data);
-              const files = [[zip, `out/${zip}`], ["SHA256SUMS.txt", "out/SHA256SUMS.txt"]];
+              const files = [[archive, `out/${archive}`], ["SHA256SUMS.txt", "out/SHA256SUMS.txt"]];
               for (const [name, file] of files) {
                 const asset = (release.assets || []).find((item) => item.name === name);
                 if (!asset || asset.size !== fs.statSync(file).size) {
@@ -207,3 +243,22 @@ jobs:
           printf '<!-- codex-cli-version:%s --><!-- msix-version:%s -->\n' \
             "$CODEX_CLI_VERSION" "$WIN_PACKAGE_VERSION" >> "$RELEASE_NOTES_PATH"
           gh release edit "$TAG" --title "$TAG" --notes-file "$RELEASE_NOTES_PATH"
+
+  ci:
+    name: CI
+    if: always()
+    needs: [preflight, build-windows]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Require successful checks
+        env:
+          PREFLIGHT: ${{ needs.preflight.result }}
+          BUILD_REQUIRED: ${{ needs.preflight.outputs.build }}
+          BUILD: ${{ needs.build-windows.result }}
+        run: |
+          test "$PREFLIGHT" = success
+          if [ "$BUILD_REQUIRED" = true ]; then
+            test "$BUILD" = success
+          else
+            test "$BUILD" = skipped
+          fi

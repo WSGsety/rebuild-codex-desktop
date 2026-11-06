@@ -1,0 +1,811 @@
+run_id,job,step,conclusion,seconds,category
+42146311652,build-windows,Set up job,success,1.0,准备/收尾
+42146311652,build-windows,Checkout,success,5.0,准备/收尾
+42146311652,build-windows,Setup Node.js,success,15.0,准备/收尾
+42146311652,build-windows,Install dependencies,success,22.0,准备/收尾
+42146311652,build-windows,Ensure 7-Zip alias,success,0,准备/收尾
+42146311652,build-windows,Test packaging scripts,success,1.0,执行
+42146311652,build-windows,Early skip check,success,10.0,执行
+42146311652,build-windows,Cache upstream MSIX,success,50.0,准备/收尾
+42146311652,build-windows,Sync upstream Windows app,success,37.0,准备/收尾
+42146311652,build-windows,Read packaged app and CLI versions,success,2.0,执行
+42146311652,build-windows,Check existing app-version release,success,1.0,执行
+42146311652,build-windows,Patch app,success,4.0,执行
+42146311652,build-windows,Build Windows zip,success,136.0,执行
+42146311652,build-windows,Create checksums,success,3.0,执行
+42146311652,build-windows,Publish release,success,41.0,执行
+42146311652,build-windows,Post Cache upstream MSIX,success,86.0,准备/收尾
+42146311652,build-windows,Post Setup Node.js,success,1.0,准备/收尾
+42146311652,build-windows,Post Checkout,success,1.0,准备/收尾
+42146311652,build-windows,Complete job,success,0,准备/收尾
+41951148395,build-windows,Set up job,success,2.0,准备/收尾
+41951148395,build-windows,Checkout,success,7.0,准备/收尾
+41951148395,build-windows,Setup Node.js,success,18.0,准备/收尾
+41951148395,build-windows,Install dependencies,success,31.0,准备/收尾
+41951148395,build-windows,Ensure 7-Zip alias,success,1.0,准备/收尾
+41951148395,build-windows,Test packaging scripts,success,1.0,执行
+41951148395,build-windows,Early skip check,success,6.0,执行
+41951148395,build-windows,Cache upstream MSIX,skipped,0,准备/收尾
+41951148395,build-windows,Sync upstream Windows app,skipped,0,准备/收尾
+41951148395,build-windows,Read packaged app and CLI versions,skipped,0,执行
+41951148395,build-windows,Check existing app-version release,skipped,0,执行
+41951148395,build-windows,Patch app,skipped,0,执行
+41951148395,build-windows,Build Windows zip,skipped,0,执行
+41951148395,build-windows,Create checksums,skipped,0,执行
+41951148395,build-windows,Publish release,skipped,0,执行
+41951148395,build-windows,Post Setup Node.js,success,1.0,准备/收尾
+41951148395,build-windows,Post Checkout,success,2.0,准备/收尾
+41951148395,build-windows,Complete job,success,0,准备/收尾
+41755651428,build-windows,Set up job,success,1.0,准备/收尾
+41755651428,build-windows,Checkout,success,5.0,准备/收尾
+41755651428,build-windows,Setup Node.js,success,14.0,准备/收尾
+41755651428,build-windows,Install dependencies,success,22.0,准备/收尾
+41755651428,build-windows,Ensure 7-Zip alias,success,0,准备/收尾
+41755651428,build-windows,Test packaging scripts,success,1.0,执行
+41755651428,build-windows,Early skip check,success,18.0,执行
+41755651428,build-windows,Cache upstream MSIX,success,34.0,准备/收尾
+41755651428,build-windows,Sync upstream Windows app,success,63.0,准备/收尾
+41755651428,build-windows,Read packaged app and CLI versions,success,1.0,执行
+41755651428,build-windows,Check existing app-version release,success,1.0,执行
+41755651428,build-windows,Patch app,success,4.0,执行
+41755651428,build-windows,Build Windows zip,success,127.0,执行
+41755651428,build-windows,Create checksums,success,3.0,执行
+41755651428,build-windows,Publish release,success,29.0,执行
+41755651428,build-windows,Post Cache upstream MSIX,success,63.0,准备/收尾
+41755651428,build-windows,Post Setup Node.js,success,0,准备/收尾
+41755651428,build-windows,Post Checkout,success,2.0,准备/收尾
+41755651428,build-windows,Complete job,success,0,准备/收尾
+41570027648,build-windows,Set up job,success,1.0,准备/收尾
+41570027648,build-windows,Checkout,success,8.0,准备/收尾
+41570027648,build-windows,Setup Node.js,success,23.0,准备/收尾
+41570027648,build-windows,Install dependencies,success,38.0,准备/收尾
+41570027648,build-windows,Ensure 7-Zip alias,success,1.0,准备/收尾
+41570027648,build-windows,Test packaging scripts,success,1.0,执行
+41570027648,build-windows,Early skip check,success,13.0,执行
+41570027648,build-windows,Cache upstream MSIX,skipped,0,准备/收尾
+41570027648,build-windows,Sync upstream Windows app,skipped,0,准备/收尾
+41570027648,build-windows,Read packaged app and CLI versions,skipped,0,执行
+41570027648,build-windows,Check existing app-version release,skipped,0,执行
+41570027648,build-windows,Patch app,skipped,0,执行
+41570027648,build-windows,Build Windows zip,skipped,0,执行
+41570027648,build-windows,Create checksums,skipped,0,执行
+41570027648,build-windows,Publish release,skipped,0,执行
+41570027648,build-windows,Post Setup Node.js,success,0,准备/收尾
+41570027648,build-windows,Post Checkout,success,2.0,准备/收尾
+41570027648,build-windows,Complete job,success,0,准备/收尾
+41370308840,build-windows,Set up job,success,1.0,准备/收尾
+41370308840,build-windows,Checkout,success,4.0,准备/收尾
+41370308840,build-windows,Setup Node.js,success,13.0,准备/收尾
+41370308840,build-windows,Install dependencies,success,19.0,准备/收尾
+41370308840,build-windows,Ensure 7-Zip alias,success,0,准备/收尾
+41370308840,build-windows,Test packaging scripts,success,1.0,执行
+41370308840,build-windows,Early skip check,success,16.0,执行
+41370308840,build-windows,Cache upstream MSIX,skipped,0,准备/收尾
+41370308840,build-windows,Sync upstream Windows app,skipped,0,准备/收尾
+41370308840,build-windows,Read packaged app and CLI versions,skipped,0,执行
+41370308840,build-windows,Check existing app-version release,skipped,0,执行
+41370308840,build-windows,Patch app,skipped,0,执行
+41370308840,build-windows,Build Windows zip,skipped,0,执行
+41370308840,build-windows,Create checksums,skipped,0,执行
+41370308840,build-windows,Publish release,skipped,0,执行
+41370308840,build-windows,Post Setup Node.js,success,0,准备/收尾
+41370308840,build-windows,Post Checkout,success,2.0,准备/收尾
+41370308840,build-windows,Complete job,success,0,准备/收尾
+41256745248,build-windows,Set up job,success,1.0,准备/收尾
+41256745248,build-windows,Checkout,success,6.0,准备/收尾
+41256745248,build-windows,Setup Node.js,success,21.0,准备/收尾
+41256745248,build-windows,Install dependencies,success,31.0,准备/收尾
+41256745248,build-windows,Ensure 7-Zip alias,success,1.0,准备/收尾
+41256745248,build-windows,Test packaging scripts,success,1.0,执行
+41256745248,build-windows,Early skip check,success,8.0,执行
+41256745248,build-windows,Cache upstream MSIX,skipped,0,准备/收尾
+41256745248,build-windows,Sync upstream Windows app,skipped,0,准备/收尾
+41256745248,build-windows,Read packaged app and CLI versions,skipped,0,执行
+41256745248,build-windows,Check existing app-version release,skipped,0,执行
+41256745248,build-windows,Patch app,skipped,0,执行
+41256745248,build-windows,Build Windows zip,skipped,0,执行
+41256745248,build-windows,Create checksums,skipped,0,执行
+41256745248,build-windows,Publish release,skipped,0,执行
+41256745248,build-windows,Post Setup Node.js,success,0,准备/收尾
+41256745248,build-windows,Post Checkout,success,2.0,准备/收尾
+41256745248,build-windows,Complete job,success,0,准备/收尾
+41153511759,build-windows,Set up job,success,2.0,准备/收尾
+41153511759,build-windows,Checkout,success,6.0,准备/收尾
+41153511759,build-windows,Setup Node.js,success,16.0,准备/收尾
+41153511759,build-windows,Install dependencies,success,28.0,准备/收尾
+41153511759,build-windows,Ensure 7-Zip alias,success,1.0,准备/收尾
+41153511759,build-windows,Test packaging scripts,success,1.0,执行
+41153511759,build-windows,Early skip check,success,7.0,执行
+41153511759,build-windows,Cache upstream MSIX,skipped,0,准备/收尾
+41153511759,build-windows,Sync upstream Windows app,skipped,0,准备/收尾
+41153511759,build-windows,Read packaged app and CLI versions,skipped,0,执行
+41153511759,build-windows,Check existing app-version release,skipped,0,执行
+41153511759,build-windows,Patch app,skipped,0,执行
+41153511759,build-windows,Build Windows zip,skipped,0,执行
+41153511759,build-windows,Create checksums,skipped,0,执行
+41153511759,build-windows,Publish release,skipped,0,执行
+41153511759,build-windows,Post Setup Node.js,success,0,准备/收尾
+41153511759,build-windows,Post Checkout,success,2.0,准备/收尾
+41153511759,build-windows,Complete job,success,0,准备/收尾
+40987608747,build-windows,Set up job,success,1.0,准备/收尾
+40987608747,build-windows,Checkout,success,5.0,准备/收尾
+40987608747,build-windows,Setup Node.js,success,17.0,准备/收尾
+40987608747,build-windows,Install dependencies,success,34.0,准备/收尾
+40987608747,build-windows,Ensure 7-Zip alias,success,1.0,准备/收尾
+40987608747,build-windows,Test packaging scripts,success,1.0,执行
+40987608747,build-windows,Early skip check,success,7.0,执行
+40987608747,build-windows,Cache upstream MSIX,success,0,准备/收尾
+40987608747,build-windows,Sync upstream Windows app,success,31.0,准备/收尾
+40987608747,build-windows,Read packaged app and CLI versions,success,1.0,执行
+40987608747,build-windows,Check existing app-version release,success,1.0,执行
+40987608747,build-windows,Patch app,success,22.0,执行
+40987608747,build-windows,Build Windows zip,success,135.0,执行
+40987608747,build-windows,Create checksums,success,4.0,执行
+40987608747,build-windows,Publish release,success,26.0,执行
+40987608747,build-windows,Post Cache upstream MSIX,success,18.0,准备/收尾
+40987608747,build-windows,Post Setup Node.js,success,0,准备/收尾
+40987608747,build-windows,Post Checkout,success,2.0,准备/收尾
+40987608747,build-windows,Complete job,success,0,准备/收尾
+40985344249,build-windows,Set up job,success,1.0,准备/收尾
+40985344249,build-windows,Checkout,success,6.0,准备/收尾
+40985344249,build-windows,Setup Node.js,success,17.0,准备/收尾
+40985344249,build-windows,Install dependencies,success,29.0,准备/收尾
+40985344249,build-windows,Ensure 7-Zip alias,success,1.0,准备/收尾
+40985344249,build-windows,Test packaging scripts,success,1.0,执行
+40985344249,build-windows,Early skip check,success,7.0,执行
+40985344249,build-windows,Cache upstream MSIX,success,1.0,准备/收尾
+40985344249,build-windows,Sync upstream Windows app,success,33.0,准备/收尾
+40985344249,build-windows,Read packaged app and CLI versions,success,2.0,执行
+40985344249,build-windows,Check existing app-version release,success,0,执行
+40985344249,build-windows,Patch app,failure,20.0,执行
+40985344249,build-windows,Build Windows zip,skipped,0,执行
+40985344249,build-windows,Create checksums,skipped,0,执行
+40985344249,build-windows,Publish release,skipped,0,执行
+40985344249,build-windows,Post Cache upstream MSIX,skipped,0,准备/收尾
+40985344249,build-windows,Post Setup Node.js,skipped,0,准备/收尾
+40985344249,build-windows,Post Checkout,success,2.0,准备/收尾
+40985344249,build-windows,Complete job,success,0,准备/收尾
+40984645665,build-windows,Set up job,success,1.0,准备/收尾
+40984645665,build-windows,Checkout,success,6.0,准备/收尾
+40984645665,build-windows,Setup Node.js,success,15.0,准备/收尾
+40984645665,build-windows,Install dependencies,success,22.0,准备/收尾
+40984645665,build-windows,Ensure 7-Zip alias,success,0,准备/收尾
+40984645665,build-windows,Test packaging scripts,success,1.0,执行
+40984645665,build-windows,Early skip check,success,7.0,执行
+40984645665,build-windows,Cache upstream MSIX,success,0,准备/收尾
+40984645665,build-windows,Sync upstream Windows app,success,37.0,准备/收尾
+40984645665,build-windows,Read packaged app and CLI versions,success,1.0,执行
+40984645665,build-windows,Check existing app-version release,success,1.0,执行
+40984645665,build-windows,Patch app,failure,16.0,执行
+40984645665,build-windows,Build Windows zip,skipped,0,执行
+40984645665,build-windows,Create checksums,skipped,0,执行
+40984645665,build-windows,Publish release,skipped,0,执行
+40984645665,build-windows,Post Cache upstream MSIX,skipped,0,准备/收尾
+40984645665,build-windows,Post Setup Node.js,skipped,0,准备/收尾
+40984645665,build-windows,Post Checkout,success,2.0,准备/收尾
+40984645665,build-windows,Complete job,success,0,准备/收尾
+40982066854,build-windows,Set up job,success,1.0,准备/收尾
+40982066854,build-windows,Checkout,success,6.0,准备/收尾
+40982066854,build-windows,Setup Node.js,success,37.0,准备/收尾
+40982066854,build-windows,Install dependencies,success,35.0,准备/收尾
+40982066854,build-windows,Ensure 7-Zip alias,success,0,准备/收尾
+40982066854,build-windows,Test packaging scripts,success,1.0,执行
+40982066854,build-windows,Early skip check,success,8.0,执行
+40982066854,build-windows,Cache upstream MSIX,success,0,准备/收尾
+40982066854,build-windows,Sync upstream Windows app,success,35.0,准备/收尾
+40982066854,build-windows,Read packaged app and CLI versions,success,1.0,执行
+40982066854,build-windows,Check existing app-version release,success,1.0,执行
+40982066854,build-windows,Patch app,failure,20.0,执行
+40982066854,build-windows,Build Windows zip,skipped,0,执行
+40982066854,build-windows,Create checksums,skipped,0,执行
+40982066854,build-windows,Publish release,skipped,0,执行
+40982066854,build-windows,Post Cache upstream MSIX,skipped,0,准备/收尾
+40982066854,build-windows,Post Setup Node.js,skipped,0,准备/收尾
+40982066854,build-windows,Post Checkout,success,2.0,准备/收尾
+40982066854,build-windows,Complete job,success,0,准备/收尾
+40835992701,build-windows,Set up job,success,1.0,准备/收尾
+40835992701,build-windows,Checkout,success,6.0,准备/收尾
+40835992701,build-windows,Setup Node.js,success,6.0,准备/收尾
+40835992701,build-windows,Install dependencies,success,40.0,准备/收尾
+40835992701,build-windows,Ensure 7-Zip alias,success,1.0,准备/收尾
+40835992701,build-windows,Test packaging scripts,success,1.0,执行
+40835992701,build-windows,Early skip check,success,7.0,执行
+40835992701,build-windows,Cache upstream MSIX,skipped,0,准备/收尾
+40835992701,build-windows,Sync upstream Windows app,skipped,0,准备/收尾
+40835992701,build-windows,Read packaged app and CLI versions,skipped,0,执行
+40835992701,build-windows,Check existing app-version release,skipped,0,执行
+40835992701,build-windows,Patch app,skipped,0,执行
+40835992701,build-windows,Build Windows zip,skipped,0,执行
+40835992701,build-windows,Create checksums,skipped,0,执行
+40835992701,build-windows,Publish release,skipped,0,执行
+40835992701,build-windows,Post Setup Node.js,success,5.0,准备/收尾
+40835992701,build-windows,Post Checkout,success,2.0,准备/收尾
+40835992701,build-windows,Complete job,success,0,准备/收尾
+40799248042,build-windows,Set up job,success,1.0,准备/收尾
+40799248042,build-windows,Checkout,success,5.0,准备/收尾
+40799248042,build-windows,Setup Node.js,success,17.0,准备/收尾
+40799248042,build-windows,Install dependencies,success,33.0,准备/收尾
+40799248042,build-windows,Ensure 7-Zip alias,success,0,准备/收尾
+40799248042,build-windows,Test packaging scripts,success,2.0,执行
+40799248042,build-windows,Early skip check,success,6.0,执行
+40799248042,build-windows,Cache upstream MSIX,success,145.0,准备/收尾
+40799248042,build-windows,Sync upstream Windows app,success,38.0,准备/收尾
+40799248042,build-windows,Read packaged app and CLI versions,success,6.0,执行
+40799248042,build-windows,Check existing app-version release,success,1.0,执行
+40799248042,build-windows,Patch app,success,27.0,执行
+40799248042,build-windows,Build Windows zip,success,130.0,执行
+40799248042,build-windows,Create checksums,success,4.0,执行
+40799248042,build-windows,Publish release,success,29.0,执行
+40799248042,build-windows,Post Cache upstream MSIX,success,315.0,准备/收尾
+40799248042,build-windows,Post Setup Node.js,success,0,准备/收尾
+40799248042,build-windows,Post Checkout,success,4.0,准备/收尾
+40799248042,build-windows,Complete job,success,0,准备/收尾
+40610771058,build-windows,Set up job,success,0,准备/收尾
+40610771058,build-windows,Checkout,success,6.0,准备/收尾
+40610771058,build-windows,Setup Node.js,success,17.0,准备/收尾
+40610771058,build-windows,Install dependencies,success,18.0,准备/收尾
+40610771058,build-windows,Ensure 7-Zip alias,success,0,准备/收尾
+40610771058,build-windows,Test packaging scripts,success,1.0,执行
+40610771058,build-windows,Early skip check,success,50.0,执行
+40610771058,build-windows,Cache upstream MSIX,success,164.0,准备/收尾
+40610771058,build-windows,Sync upstream Windows app,success,32.0,准备/收尾
+40610771058,build-windows,Read packaged app and CLI versions,success,7.0,执行
+40610771058,build-windows,Check existing app-version release,success,1.0,执行
+40610771058,build-windows,Patch app,success,16.0,执行
+40610771058,build-windows,Build Windows zip,success,100.0,执行
+40610771058,build-windows,Create checksums,success,2.0,执行
+40610771058,build-windows,Publish release,success,28.0,执行
+40610771058,build-windows,Post Cache upstream MSIX,success,178.0,准备/收尾
+40610771058,build-windows,Post Setup Node.js,success,0,准备/收尾
+40610771058,build-windows,Post Checkout,success,2.0,准备/收尾
+40610771058,build-windows,Complete job,success,0,准备/收尾
+40428988245,build-windows,Set up job,success,2.0,准备/收尾
+40428988245,build-windows,Checkout,success,5.0,准备/收尾
+40428988245,build-windows,Setup Node.js,success,18.0,准备/收尾
+40428988245,build-windows,Install dependencies,success,22.0,准备/收尾
+40428988245,build-windows,Ensure 7-Zip alias,success,0,准备/收尾
+40428988245,build-windows,Test packaging scripts,success,1.0,执行
+40428988245,build-windows,Early skip check,success,7.0,执行
+40428988245,build-windows,Cache upstream MSIX,skipped,0,准备/收尾
+40428988245,build-windows,Sync upstream Windows app,skipped,0,准备/收尾
+40428988245,build-windows,Read packaged app and CLI versions,skipped,0,执行
+40428988245,build-windows,Check existing app-version release,skipped,0,执行
+40428988245,build-windows,Patch app,skipped,0,执行
+40428988245,build-windows,Build Windows zip,skipped,0,执行
+40428988245,build-windows,Create checksums,skipped,0,执行
+40428988245,build-windows,Publish release,skipped,0,执行
+40428988245,build-windows,Post Setup Node.js,success,0,准备/收尾
+40428988245,build-windows,Post Checkout,success,2.0,准备/收尾
+40428988245,build-windows,Complete job,success,0,准备/收尾
+40245358247,build-windows,Set up job,success,1.0,准备/收尾
+40245358247,build-windows,Checkout,success,5.0,准备/收尾
+40245358247,build-windows,Setup Node.js,success,6.0,准备/收尾
+40245358247,build-windows,Install dependencies,success,35.0,准备/收尾
+40245358247,build-windows,Ensure 7-Zip alias,success,1.0,准备/收尾
+40245358247,build-windows,Test packaging scripts,success,1.0,执行
+40245358247,build-windows,Early skip check,success,6.0,执行
+40245358247,build-windows,Cache upstream MSIX,skipped,0,准备/收尾
+40245358247,build-windows,Sync upstream Windows app,skipped,0,准备/收尾
+40245358247,build-windows,Read packaged app and CLI versions,skipped,0,执行
+40245358247,build-windows,Check existing app-version release,skipped,0,执行
+40245358247,build-windows,Patch app,skipped,0,执行
+40245358247,build-windows,Build Windows zip,skipped,0,执行
+40245358247,build-windows,Create checksums,skipped,0,执行
+40245358247,build-windows,Publish release,skipped,0,执行
+40245358247,build-windows,Post Setup Node.js,success,6.0,准备/收尾
+40245358247,build-windows,Post Checkout,success,2.0,准备/收尾
+40245358247,build-windows,Complete job,success,0,准备/收尾
+40143979141,build-windows,Set up job,success,1.0,准备/收尾
+40143979141,build-windows,Checkout,success,5.0,准备/收尾
+40143979141,build-windows,Setup Node.js,success,16.0,准备/收尾
+40143979141,build-windows,Install dependencies,success,24.0,准备/收尾
+40143979141,build-windows,Ensure 7-Zip alias,success,1.0,准备/收尾
+40143979141,build-windows,Test packaging scripts,success,1.0,执行
+40143979141,build-windows,Early skip check,success,6.0,执行
+40143979141,build-windows,Cache upstream MSIX,success,150.0,准备/收尾
+40143979141,build-windows,Sync upstream Windows app,success,34.0,准备/收尾
+40143979141,build-windows,Read packaged app and CLI versions,success,5.0,执行
+40143979141,build-windows,Check existing app-version release,success,2.0,执行
+40143979141,build-windows,Patch app,success,22.0,执行
+40143979141,build-windows,Build Windows zip,success,147.0,执行
+40143979141,build-windows,Create checksums,success,3.0,执行
+40143979141,build-windows,Publish release,success,33.0,执行
+40143979141,build-windows,Post Cache upstream MSIX,success,173.0,准备/收尾
+40143979141,build-windows,Post Setup Node.js,success,1.0,准备/收尾
+40143979141,build-windows,Post Checkout,success,2.0,准备/收尾
+40143979141,build-windows,Complete job,success,0,准备/收尾
+40042980252,build-windows,Set up job,success,1.0,准备/收尾
+40042980252,build-windows,Checkout,success,5.0,准备/收尾
+40042980252,build-windows,Setup Node.js,success,17.0,准备/收尾
+40042980252,build-windows,Install dependencies,success,29.0,准备/收尾
+40042980252,build-windows,Ensure 7-Zip alias,success,0,准备/收尾
+40042980252,build-windows,Test packaging scripts,success,1.0,执行
+40042980252,build-windows,Early skip check,success,7.0,执行
+40042980252,build-windows,Cache upstream MSIX,success,107.0,准备/收尾
+40042980252,build-windows,Sync upstream Windows app,success,43.0,准备/收尾
+40042980252,build-windows,Read packaged app and CLI versions,success,5.0,执行
+40042980252,build-windows,Check existing app-version release,success,1.0,执行
+40042980252,build-windows,Patch app,success,23.0,执行
+40042980252,build-windows,Build Windows zip,success,130.0,执行
+40042980252,build-windows,Create checksums,success,4.0,执行
+40042980252,build-windows,Publish release,success,35.0,执行
+40042980252,build-windows,Post Cache upstream MSIX,success,274.0,准备/收尾
+40042980252,build-windows,Post Setup Node.js,success,1.0,准备/收尾
+40042980252,build-windows,Post Checkout,success,2.0,准备/收尾
+40042980252,build-windows,Complete job,success,0,准备/收尾
+39876507040,build-windows,Set up job,success,1.0,准备/收尾
+39876507040,build-windows,Checkout,success,5.0,准备/收尾
+39876507040,build-windows,Setup Node.js,success,37.0,准备/收尾
+39876507040,build-windows,Install dependencies,success,84.0,准备/收尾
+39876507040,build-windows,Ensure 7-Zip alias,success,0,准备/收尾
+39876507040,build-windows,Test packaging scripts,success,3.0,执行
+39876507040,build-windows,Early skip check,success,118.0,执行
+39876507040,build-windows,Cache upstream MSIX,success,240.0,准备/收尾
+39876507040,build-windows,Sync upstream Windows app,success,116.0,准备/收尾
+39876507040,build-windows,Read packaged app and CLI versions,success,24.0,执行
+39876507040,build-windows,Check existing app-version release,success,1.0,执行
+39876507040,build-windows,Patch app,success,23.0,执行
+39876507040,build-windows,Build Windows zip,success,114.0,执行
+39876507040,build-windows,Create checksums,success,3.0,执行
+39876507040,build-windows,Publish release,success,41.0,执行
+39876507040,build-windows,Post Cache upstream MSIX,success,142.0,准备/收尾
+39876507040,build-windows,Post Setup Node.js,success,173.0,准备/收尾
+39876507040,build-windows,Post Checkout,success,2.0,准备/收尾
+39876507040,build-windows,Complete job,success,0,准备/收尾
+39698517082,build-windows,Set up job,success,1.0,准备/收尾
+39698517082,build-windows,Checkout,success,4.0,准备/收尾
+39698517082,build-windows,Setup Node.js,success,25.0,准备/收尾
+39698517082,build-windows,Install dependencies,success,19.0,准备/收尾
+39698517082,build-windows,Ensure 7-Zip alias,success,0,准备/收尾
+39698517082,build-windows,Test packaging scripts,success,1.0,执行
+39698517082,build-windows,Early skip check,success,6.0,执行
+39698517082,build-windows,Cache upstream MSIX,success,84.0,准备/收尾
+39698517082,build-windows,Sync upstream Windows app,success,37.0,准备/收尾
+39698517082,build-windows,Read packaged app and CLI versions,success,4.0,执行
+39698517082,build-windows,Check existing app-version release,success,2.0,执行
+39698517082,build-windows,Patch app,success,17.0,执行
+39698517082,build-windows,Build Windows zip,success,94.0,执行
+39698517082,build-windows,Create checksums,success,2.0,执行
+39698517082,build-windows,Publish release,success,36.0,执行
+39698517082,build-windows,Post Cache upstream MSIX,success,110.0,准备/收尾
+39698517082,build-windows,Post Setup Node.js,success,0,准备/收尾
+39698517082,build-windows,Post Checkout,success,2.0,准备/收尾
+39698517082,build-windows,Complete job,success,0,准备/收尾
+39519550102,build-windows,Set up job,success,1.0,准备/收尾
+39519550102,build-windows,Checkout,success,7.0,准备/收尾
+39519550102,build-windows,Setup Node.js,success,21.0,准备/收尾
+39519550102,build-windows,Install dependencies,success,23.0,准备/收尾
+39519550102,build-windows,Ensure 7-Zip alias,success,1.0,准备/收尾
+39519550102,build-windows,Test packaging scripts,success,1.0,执行
+39519550102,build-windows,Early skip check,success,21.0,执行
+39519550102,build-windows,Cache upstream MSIX,skipped,0,准备/收尾
+39519550102,build-windows,Sync upstream Windows app,skipped,0,准备/收尾
+39519550102,build-windows,Read packaged app and CLI versions,skipped,0,执行
+39519550102,build-windows,Check existing app-version release,skipped,0,执行
+39519550102,build-windows,Patch app,skipped,0,执行
+39519550102,build-windows,Build Windows zip,skipped,0,执行
+39519550102,build-windows,Create checksums,skipped,0,执行
+39519550102,build-windows,Publish release,skipped,0,执行
+39519550102,build-windows,Post Setup Node.js,success,0,准备/收尾
+39519550102,build-windows,Post Checkout,success,1.0,准备/收尾
+39519550102,build-windows,Complete job,success,0,准备/收尾
+39349069001,build-windows,Set up job,success,1.0,准备/收尾
+39349069001,build-windows,Checkout,success,6.0,准备/收尾
+39349069001,build-windows,Setup Node.js,success,19.0,准备/收尾
+39349069001,build-windows,Install dependencies,success,20.0,准备/收尾
+39349069001,build-windows,Ensure 7-Zip alias,success,0,准备/收尾
+39349069001,build-windows,Test packaging scripts,success,1.0,执行
+39349069001,build-windows,Early skip check,success,8.0,执行
+39349069001,build-windows,Cache upstream MSIX,skipped,0,准备/收尾
+39349069001,build-windows,Sync upstream Windows app,skipped,0,准备/收尾
+39349069001,build-windows,Read packaged app and CLI versions,skipped,0,执行
+39349069001,build-windows,Check existing app-version release,skipped,0,执行
+39349069001,build-windows,Patch app,skipped,0,执行
+39349069001,build-windows,Build Windows zip,skipped,0,执行
+39349069001,build-windows,Create checksums,skipped,0,执行
+39349069001,build-windows,Publish release,skipped,0,执行
+39349069001,build-windows,Post Setup Node.js,success,0,准备/收尾
+39349069001,build-windows,Post Checkout,success,2.0,准备/收尾
+39349069001,build-windows,Complete job,success,0,准备/收尾
+39177537922,build-windows,Set up job,success,1.0,准备/收尾
+39177537922,build-windows,Checkout,success,7.0,准备/收尾
+39177537922,build-windows,Setup Node.js,success,24.0,准备/收尾
+39177537922,build-windows,Install dependencies,success,24.0,准备/收尾
+39177537922,build-windows,Ensure 7-Zip alias,success,0,准备/收尾
+39177537922,build-windows,Test packaging scripts,success,1.0,执行
+39177537922,build-windows,Early skip check,success,7.0,执行
+39177537922,build-windows,Cache upstream MSIX,skipped,0,准备/收尾
+39177537922,build-windows,Sync upstream Windows app,skipped,0,准备/收尾
+39177537922,build-windows,Read packaged app and CLI versions,skipped,0,执行
+39177537922,build-windows,Check existing app-version release,skipped,0,执行
+39177537922,build-windows,Patch app,skipped,0,执行
+39177537922,build-windows,Build Windows zip,skipped,0,执行
+39177537922,build-windows,Create checksums,skipped,0,执行
+39177537922,build-windows,Publish release,skipped,0,执行
+39177537922,build-windows,Post Setup Node.js,success,0,准备/收尾
+39177537922,build-windows,Post Checkout,success,2.0,准备/收尾
+39177537922,build-windows,Complete job,success,0,准备/收尾
+39079063479,build-windows,Set up job,success,1.0,准备/收尾
+39079063479,build-windows,Checkout,success,7.0,准备/收尾
+39079063479,build-windows,Setup Node.js,success,43.0,准备/收尾
+39079063479,build-windows,Install dependencies,success,25.0,准备/收尾
+39079063479,build-windows,Ensure 7-Zip alias,success,1.0,准备/收尾
+39079063479,build-windows,Test packaging scripts,success,1.0,执行
+39079063479,build-windows,Early skip check,success,6.0,执行
+39079063479,build-windows,Cache upstream MSIX,success,73.0,准备/收尾
+39079063479,build-windows,Sync upstream Windows app,success,28.0,准备/收尾
+39079063479,build-windows,Read packaged app and CLI versions,success,1.0,执行
+39079063479,build-windows,Check existing app-version release,success,1.0,执行
+39079063479,build-windows,Patch app,success,17.0,执行
+39079063479,build-windows,Build Windows zip,success,90.0,执行
+39079063479,build-windows,Create checksums,success,2.0,执行
+39079063479,build-windows,Publish release,success,36.0,执行
+39079063479,build-windows,Post Cache upstream MSIX,success,91.0,准备/收尾
+39079063479,build-windows,Post Setup Node.js,success,0,准备/收尾
+39079063479,build-windows,Post Checkout,success,2.0,准备/收尾
+39079063479,build-windows,Complete job,success,0,准备/收尾
+38983805875,build-windows,Set up job,success,1.0,准备/收尾
+38983805875,build-windows,Checkout,success,5.0,准备/收尾
+38983805875,build-windows,Setup Node.js,success,20.0,准备/收尾
+38983805875,build-windows,Install dependencies,success,25.0,准备/收尾
+38983805875,build-windows,Ensure 7-Zip alias,success,1.0,准备/收尾
+38983805875,build-windows,Test packaging scripts,success,1.0,执行
+38983805875,build-windows,Early skip check,success,9.0,执行
+38983805875,build-windows,Cache upstream MSIX,success,69.0,准备/收尾
+38983805875,build-windows,Sync upstream Windows app,success,30.0,准备/收尾
+38983805875,build-windows,Read packaged app and CLI versions,success,1.0,执行
+38983805875,build-windows,Check existing app-version release,success,1.0,执行
+38983805875,build-windows,Patch app,success,23.0,执行
+38983805875,build-windows,Build Windows zip,success,114.0,执行
+38983805875,build-windows,Create checksums,success,4.0,执行
+38983805875,build-windows,Publish release,success,40.0,执行
+38983805875,build-windows,Post Cache upstream MSIX,success,136.0,准备/收尾
+38983805875,build-windows,Post Setup Node.js,success,0,准备/收尾
+38983805875,build-windows,Post Checkout,success,2.0,准备/收尾
+38983805875,build-windows,Complete job,success,0,准备/收尾
+38831856182,build-windows,Set up job,success,1.0,准备/收尾
+38831856182,build-windows,Checkout,success,5.0,准备/收尾
+38831856182,build-windows,Setup Node.js,success,20.0,准备/收尾
+38831856182,build-windows,Install dependencies,success,31.0,准备/收尾
+38831856182,build-windows,Ensure 7-Zip alias,success,1.0,准备/收尾
+38831856182,build-windows,Test packaging scripts,success,1.0,执行
+38831856182,build-windows,Early skip check,success,7.0,执行
+38831856182,build-windows,Cache upstream MSIX,success,45.0,准备/收尾
+38831856182,build-windows,Sync upstream Windows app,success,59.0,准备/收尾
+38831856182,build-windows,Read packaged app and CLI versions,success,2.0,执行
+38831856182,build-windows,Check existing app-version release,success,1.0,执行
+38831856182,build-windows,Patch app,success,27.0,执行
+38831856182,build-windows,Build Windows zip,success,119.0,执行
+38831856182,build-windows,Create checksums,success,4.0,执行
+38831856182,build-windows,Publish release,success,30.0,执行
+38831856182,build-windows,Post Cache upstream MSIX,success,1.0,准备/收尾
+38831856182,build-windows,Post Setup Node.js,success,1.0,准备/收尾
+38831856182,build-windows,Post Checkout,success,5.0,准备/收尾
+38831856182,build-windows,Complete job,success,1.0,准备/收尾
+38826193496,build-windows,Set up job,success,1.0,准备/收尾
+38826193496,build-windows,Checkout,success,6.0,准备/收尾
+38826193496,build-windows,Setup Node.js,success,19.0,准备/收尾
+38826193496,build-windows,Install dependencies,success,31.0,准备/收尾
+38826193496,build-windows,Ensure 7-Zip alias,success,1.0,准备/收尾
+38826193496,build-windows,Test packaging scripts,success,1.0,执行
+38826193496,build-windows,Early skip check,failure,164.0,执行
+38826193496,build-windows,Cache upstream MSIX,skipped,0,准备/收尾
+38826193496,build-windows,Sync upstream Windows app,skipped,0,准备/收尾
+38826193496,build-windows,Read packaged app and CLI versions,skipped,0,执行
+38826193496,build-windows,Check existing app-version release,skipped,0,执行
+38826193496,build-windows,Patch app,skipped,0,执行
+38826193496,build-windows,Build Windows zip,skipped,0,执行
+38826193496,build-windows,Create checksums,skipped,0,执行
+38826193496,build-windows,Publish release,skipped,0,执行
+38826193496,build-windows,Post Setup Node.js,skipped,0,准备/收尾
+38826193496,build-windows,Post Checkout,success,3.0,准备/收尾
+38826193496,build-windows,Complete job,success,0,准备/收尾
+38658204623,build-windows,Set up job,success,1.0,准备/收尾
+38658204623,build-windows,Checkout,success,10.0,准备/收尾
+38658204623,build-windows,Setup Node.js,success,32.0,准备/收尾
+38658204623,build-windows,Install dependencies,success,31.0,准备/收尾
+38658204623,build-windows,Ensure 7-Zip alias,success,0,准备/收尾
+38658204623,build-windows,Test packaging scripts,success,1.0,执行
+38658204623,build-windows,Early skip check,success,16.0,执行
+38658204623,build-windows,Cache upstream MSIX,success,41.0,准备/收尾
+38658204623,build-windows,Sync upstream Windows app,success,48.0,准备/收尾
+38658204623,build-windows,Read packaged app and CLI versions,success,2.0,执行
+38658204623,build-windows,Check existing app-version release,success,1.0,执行
+38658204623,build-windows,Patch app,success,28.0,执行
+38658204623,build-windows,Build Windows zip,success,121.0,执行
+38658204623,build-windows,Create checksums,success,4.0,执行
+38658204623,build-windows,Publish release,success,32.0,执行
+38658204623,build-windows,Post Cache upstream MSIX,success,217.0,准备/收尾
+38658204623,build-windows,Post Setup Node.js,success,0,准备/收尾
+38658204623,build-windows,Post Checkout,success,3.0,准备/收尾
+38658204623,build-windows,Complete job,success,0,准备/收尾
+38491239086,build-windows,Set up job,success,1.0,准备/收尾
+38491239086,build-windows,Checkout,success,5.0,准备/收尾
+38491239086,build-windows,Setup Node.js,success,21.0,准备/收尾
+38491239086,build-windows,Install dependencies,success,30.0,准备/收尾
+38491239086,build-windows,Ensure 7-Zip alias,success,0,准备/收尾
+38491239086,build-windows,Test packaging scripts,success,1.0,执行
+38491239086,build-windows,Early skip check,success,57.0,执行
+38491239086,build-windows,Cache upstream MSIX,skipped,0,准备/收尾
+38491239086,build-windows,Sync upstream Windows app,skipped,0,准备/收尾
+38491239086,build-windows,Read packaged app and CLI versions,skipped,0,执行
+38491239086,build-windows,Check existing app-version release,skipped,0,执行
+38491239086,build-windows,Patch app,skipped,0,执行
+38491239086,build-windows,Build Windows zip,skipped,0,执行
+38491239086,build-windows,Create checksums,skipped,0,执行
+38491239086,build-windows,Publish release,skipped,0,执行
+38491239086,build-windows,Post Setup Node.js,success,0,准备/收尾
+38491239086,build-windows,Post Checkout,success,2.0,准备/收尾
+38491239086,build-windows,Complete job,success,0,准备/收尾
+38338232557,build-windows,Set up job,success,0,准备/收尾
+38338232557,build-windows,Checkout,success,5.0,准备/收尾
+38338232557,build-windows,Setup Node.js,success,21.0,准备/收尾
+38338232557,build-windows,Install dependencies,success,29.0,准备/收尾
+38338232557,build-windows,Ensure 7-Zip alias,success,1.0,准备/收尾
+38338232557,build-windows,Test packaging scripts,success,1.0,执行
+38338232557,build-windows,Early skip check,success,6.0,执行
+38338232557,build-windows,Cache upstream MSIX,skipped,0,准备/收尾
+38338232557,build-windows,Sync upstream Windows app,skipped,0,准备/收尾
+38338232557,build-windows,Read packaged app and CLI versions,skipped,0,执行
+38338232557,build-windows,Check existing app-version release,skipped,0,执行
+38338232557,build-windows,Patch app,skipped,0,执行
+38338232557,build-windows,Build Windows zip,skipped,0,执行
+38338232557,build-windows,Create checksums,skipped,0,执行
+38338232557,build-windows,Publish release,skipped,0,执行
+38338232557,build-windows,Post Setup Node.js,success,1.0,准备/收尾
+38338232557,build-windows,Post Checkout,success,2.0,准备/收尾
+38338232557,build-windows,Complete job,success,0,准备/收尾
+38228248838,build-windows,Set up job,success,1.0,准备/收尾
+38228248838,build-windows,Checkout,success,4.0,准备/收尾
+38228248838,build-windows,Setup Node.js,success,42.0,准备/收尾
+38228248838,build-windows,Install dependencies,success,27.0,准备/收尾
+38228248838,build-windows,Ensure 7-Zip alias,success,0,准备/收尾
+38228248838,build-windows,Test packaging scripts,success,4.0,执行
+38228248838,build-windows,Early skip check,success,8.0,执行
+38228248838,build-windows,Cache upstream MSIX,success,62.0,准备/收尾
+38228248838,build-windows,Sync upstream Windows app,success,25.0,准备/收尾
+38228248838,build-windows,Read packaged app and CLI versions,success,1.0,执行
+38228248838,build-windows,Check existing app-version release,success,1.0,执行
+38228248838,build-windows,Patch app,success,15.0,执行
+38228248838,build-windows,Build Windows zip,success,99.0,执行
+38228248838,build-windows,Build Windows update zip,success,76.0,执行
+38228248838,build-windows,Create checksums,success,3.0,执行
+38228248838,build-windows,Publish release,success,46.0,执行
+38228248838,build-windows,Post Cache upstream MSIX,success,1.0,准备/收尾
+38228248838,build-windows,Post Setup Node.js,success,0,准备/收尾
+38228248838,build-windows,Post Checkout,success,2.0,准备/收尾
+38228248838,build-windows,Complete job,success,0,准备/收尾
+38189234267,preview,Set up job,success,0,准备/收尾
+38189234267,preview,Run actions/checkout@v5,success,6.0,准备/收尾
+38189234267,preview,Run actions/setup-node@v5,success,25.0,准备/收尾
+38189234267,preview,Run npm ci,success,32.0,准备/收尾
+38189234267,preview,Prepare archive command,success,1.0,准备/收尾
+38189234267,preview,Basic checks,success,7.0,执行
+38189234267,preview,Publish preview only,success,10.0,执行
+38189234267,preview,Post Run actions/setup-node@v5,success,0,准备/收尾
+38189234267,preview,Post Run actions/checkout@v5,success,2.0,准备/收尾
+38189234267,preview,Complete job,success,0,准备/收尾
+38189139706,build-windows,Set up job,success,2.0,准备/收尾
+38189139706,build-windows,Checkout,success,11.0,准备/收尾
+38189139706,build-windows,Setup Node.js,success,17.0,准备/收尾
+38189139706,build-windows,Install dependencies,success,33.0,准备/收尾
+38189139706,build-windows,Ensure 7-Zip alias,success,0,准备/收尾
+38189139706,build-windows,Test packaging scripts,success,5.0,执行
+38189139706,build-windows,Early skip check,success,7.0,执行
+38189139706,build-windows,Cache upstream MSIX,skipped,0,准备/收尾
+38189139706,build-windows,Sync upstream Windows app,skipped,0,准备/收尾
+38189139706,build-windows,Read packaged app and CLI versions,skipped,0,执行
+38189139706,build-windows,Check existing app-version release,skipped,0,执行
+38189139706,build-windows,Patch app,skipped,0,执行
+38189139706,build-windows,Build Windows zip,skipped,0,执行
+38189139706,build-windows,Build Windows update zip,skipped,0,执行
+38189139706,build-windows,Create checksums,skipped,0,执行
+38189139706,build-windows,Publish release,skipped,0,执行
+38189139706,build-windows,Post Setup Node.js,success,0,准备/收尾
+38189139706,build-windows,Post Checkout,success,2.0,准备/收尾
+38189139706,build-windows,Complete job,success,0,准备/收尾
+38098710321,preview,Set up job,success,1.0,准备/收尾
+38098710321,preview,Run actions/checkout@v5,success,4.0,准备/收尾
+38098710321,preview,Run actions/setup-node@v5,success,15.0,准备/收尾
+38098710321,preview,Run npm ci,success,30.0,准备/收尾
+38098710321,preview,Prepare archive command,success,1.0,准备/收尾
+38098710321,preview,Basic checks,success,5.0,执行
+38098710321,preview,Publish preview only,success,4.0,执行
+38098710321,preview,Post Run actions/setup-node@v5,success,0,准备/收尾
+38098710321,preview,Post Run actions/checkout@v5,success,2.0,准备/收尾
+38098710321,preview,Complete job,success,0,准备/收尾
+38098644840,build-windows,Set up job,success,1.0,准备/收尾
+38098644840,build-windows,Checkout,success,4.0,准备/收尾
+38098644840,build-windows,Setup Node.js,success,16.0,准备/收尾
+38098644840,build-windows,Install dependencies,success,20.0,准备/收尾
+38098644840,build-windows,Ensure 7-Zip alias,success,0,准备/收尾
+38098644840,build-windows,Test packaging scripts,success,4.0,执行
+38098644840,build-windows,Early skip check,success,8.0,执行
+38098644840,build-windows,Cache upstream MSIX,skipped,0,准备/收尾
+38098644840,build-windows,Sync upstream Windows app,skipped,0,准备/收尾
+38098644840,build-windows,Read packaged app and CLI versions,skipped,0,执行
+38098644840,build-windows,Check existing app-version release,skipped,0,执行
+38098644840,build-windows,Patch app,skipped,0,执行
+38098644840,build-windows,Build Windows zip,skipped,0,执行
+38098644840,build-windows,Build Windows update zip,skipped,0,执行
+38098644840,build-windows,Create checksums,skipped,0,执行
+38098644840,build-windows,Publish release,skipped,0,执行
+38098644840,build-windows,Post Setup Node.js,success,0,准备/收尾
+38098644840,build-windows,Post Checkout,success,1.0,准备/收尾
+38098644840,build-windows,Complete job,success,0,准备/收尾
+38051925054,preview,Set up job,success,1.0,准备/收尾
+38051925054,preview,Run actions/checkout@v5,success,4.0,准备/收尾
+38051925054,preview,Run actions/setup-node@v5,success,14.0,准备/收尾
+38051925054,preview,Run npm ci,success,21.0,准备/收尾
+38051925054,preview,Prepare archive command,success,0,准备/收尾
+38051925054,preview,Basic checks,success,6.0,执行
+38051925054,preview,Publish preview only,success,283.0,执行
+38051925054,preview,Post Run actions/setup-node@v5,success,0,准备/收尾
+38051925054,preview,Post Run actions/checkout@v5,success,2.0,准备/收尾
+38051925054,preview,Complete job,success,0,准备/收尾
+38049626876,preview,Set up job,success,1.0,准备/收尾
+38049626876,preview,Run actions/checkout@v5,success,5.0,准备/收尾
+38049626876,preview,Run actions/setup-node@v5,success,26.0,准备/收尾
+38049626876,preview,Run npm ci,success,30.0,准备/收尾
+38049626876,preview,Prepare archive command,success,2.0,准备/收尾
+38049626876,preview,Basic checks,success,6.0,执行
+38049626876,preview,Publish preview only,success,411.0,执行
+38049626876,preview,Post Run actions/setup-node@v5,success,0,准备/收尾
+38049626876,preview,Post Run actions/checkout@v5,success,2.0,准备/收尾
+38049626876,preview,Complete job,success,0,准备/收尾
+38046796179,preview,Set up job,success,1.0,准备/收尾
+38046796179,preview,Run actions/checkout@v5,success,5.0,准备/收尾
+38046796179,preview,Run actions/setup-node@v5,success,19.0,准备/收尾
+38046796179,preview,Run npm ci,success,29.0,准备/收尾
+38046796179,preview,Prepare archive command,success,1.0,准备/收尾
+38046796179,preview,Basic checks,success,6.0,执行
+38046796179,preview,Publish preview only,success,6.0,执行
+38046796179,preview,Post Run actions/setup-node@v5,success,0,准备/收尾
+38046796179,preview,Post Run actions/checkout@v5,success,3.0,准备/收尾
+38046796179,preview,Complete job,success,0,准备/收尾
+38045081905,preview,Set up job,success,1.0,准备/收尾
+38045081905,preview,Run actions/checkout@v5,success,4.0,准备/收尾
+38045081905,preview,Run actions/setup-node@v5,success,17.0,准备/收尾
+38045081905,preview,Run npm ci,success,44.0,准备/收尾
+38045081905,preview,Prepare archive command,success,0,准备/收尾
+38045081905,preview,Basic checks,success,8.0,执行
+38045081905,preview,Publish preview only,success,379.0,执行
+38045081905,preview,Post Run actions/setup-node@v5,success,1.0,准备/收尾
+38045081905,preview,Post Run actions/checkout@v5,success,3.0,准备/收尾
+38045081905,preview,Complete job,success,0,准备/收尾
+38040587996,preview,Set up job,success,1.0,准备/收尾
+38040587996,preview,Run actions/checkout@v5,success,4.0,准备/收尾
+38040587996,preview,Run actions/setup-node@v5,success,16.0,准备/收尾
+38040587996,preview,Run npm ci,success,23.0,准备/收尾
+38040587996,preview,Prepare archive command,success,0,准备/收尾
+38040587996,preview,Basic checks,success,4.0,执行
+38040587996,preview,Publish preview only,success,4.0,执行
+38040587996,preview,Post Run actions/setup-node@v5,success,0,准备/收尾
+38040587996,preview,Post Run actions/checkout@v5,success,2.0,准备/收尾
+38040587996,preview,Complete job,success,0,准备/收尾
+38040025927,preview,Set up job,success,0,准备/收尾
+38040025927,preview,Run actions/checkout@v5,success,5.0,准备/收尾
+38040025927,preview,Run actions/setup-node@v5,success,18.0,准备/收尾
+38040025927,preview,Run npm ci,success,22.0,准备/收尾
+38040025927,preview,Prepare archive command,success,1.0,准备/收尾
+38040025927,preview,Basic checks,success,5.0,执行
+38040025927,preview,Publish preview only,success,282.0,执行
+38040025927,preview,Post Run actions/setup-node@v5,success,0,准备/收尾
+38040025927,preview,Post Run actions/checkout@v5,success,1.0,准备/收尾
+38040025927,preview,Complete job,success,0,准备/收尾
+38038839864,preview,Set up job,success,1.0,准备/收尾
+38038839864,preview,Run actions/checkout@v5,success,5.0,准备/收尾
+38038839864,preview,Run actions/setup-node@v5,success,17.0,准备/收尾
+38038839864,preview,Run npm ci,success,29.0,准备/收尾
+38038839864,preview,Prepare archive command,success,0,准备/收尾
+38038839864,preview,Basic checks,success,6.0,执行
+38038839864,preview,Publish preview only,success,5.0,执行
+38038839864,preview,Post Run actions/setup-node@v5,success,0,准备/收尾
+38038839864,preview,Post Run actions/checkout@v5,success,2.0,准备/收尾
+38038839864,preview,Complete job,success,0,准备/收尾
+38023890948,preview,Set up job,success,1.0,准备/收尾
+38023890948,preview,Run actions/checkout@v5,success,5.0,准备/收尾
+38023890948,preview,Run actions/setup-node@v5,success,19.0,准备/收尾
+38023890948,preview,Run npm ci,success,29.0,准备/收尾
+38023890948,preview,Prepare archive command,success,1.0,准备/收尾
+38023890948,preview,Basic checks,success,6.0,执行
+38023890948,preview,Publish preview only,success,5.0,执行
+38023890948,preview,Post Run actions/setup-node@v5,success,0,准备/收尾
+38023890948,preview,Post Run actions/checkout@v5,success,2.0,准备/收尾
+38023890948,preview,Complete job,success,0,准备/收尾
+38023383358,preview,Set up job,success,1.0,准备/收尾
+38023383358,preview,Run actions/checkout@v5,success,5.0,准备/收尾
+38023383358,preview,Run actions/setup-node@v5,success,29.0,准备/收尾
+38023383358,preview,Run npm ci,success,30.0,准备/收尾
+38023383358,preview,Prepare archive command,success,1.0,准备/收尾
+38023383358,preview,Basic checks,success,6.0,执行
+38023383358,preview,Publish preview only,success,406.0,执行
+38023383358,preview,Post Run actions/setup-node@v5,success,0,准备/收尾
+38023383358,preview,Post Run actions/checkout@v5,success,2.0,准备/收尾
+38023383358,preview,Complete job,success,0,准备/收尾
+38022944719,preview,Set up job,success,1.0,准备/收尾
+38022944719,preview,Run actions/checkout@v5,success,5.0,准备/收尾
+38022944719,preview,Run actions/setup-node@v5,success,20.0,准备/收尾
+38022944719,preview,Run npm ci,success,33.0,准备/收尾
+38022944719,preview,Prepare archive command,success,1.0,准备/收尾
+38022944719,preview,Basic checks,success,6.0,执行
+38022944719,preview,Publish preview only,failure,313.0,执行
+38022944719,preview,Post Run actions/setup-node@v5,skipped,0,准备/收尾
+38022944719,preview,Post Run actions/checkout@v5,success,2.0,准备/收尾
+38022944719,preview,Complete job,success,0,准备/收尾
+38022816479,preview,Set up job,success,1.0,准备/收尾
+38022816479,preview,Run actions/checkout@v5,success,11.0,准备/收尾
+38022816479,preview,Run actions/setup-node@v5,success,31.0,准备/收尾
+38022816479,preview,Run npm ci,success,23.0,准备/收尾
+38022816479,preview,Prepare archive command,success,0,准备/收尾
+38022816479,preview,Basic checks,failure,5.0,执行
+38022816479,preview,Publish preview only,skipped,0,执行
+38022816479,preview,Post Run actions/setup-node@v5,skipped,0,准备/收尾
+38022816479,preview,Post Run actions/checkout@v5,success,1.0,准备/收尾
+38022816479,preview,Complete job,success,0,准备/收尾
+38022660621,preview,Set up job,success,1.0,准备/收尾
+38022660621,preview,Run actions/checkout@v5,success,6.0,准备/收尾
+38022660621,preview,Run actions/setup-node@v5,success,27.0,准备/收尾
+38022660621,preview,Run npm ci,success,30.0,准备/收尾
+38022660621,preview,Prepare archive command,success,0,准备/收尾
+38022660621,preview,Basic checks,failure,5.0,执行
+38022660621,preview,Publish preview only,skipped,0,执行
+38022660621,preview,Post Run actions/setup-node@v5,skipped,0,准备/收尾
+38022660621,preview,Post Run actions/checkout@v5,success,2.0,准备/收尾
+38022660621,preview,Complete job,success,0,准备/收尾
+38012579353,build-windows,Set up job,success,1.0,准备/收尾
+38012579353,build-windows,Checkout,success,5.0,准备/收尾
+38012579353,build-windows,Setup Node.js,success,23.0,准备/收尾
+38012579353,build-windows,Install dependencies,success,29.0,准备/收尾
+38012579353,build-windows,Ensure 7-Zip alias,success,0,准备/收尾
+38012579353,build-windows,Test packaging scripts,success,5.0,执行
+38012579353,build-windows,Early skip check,success,7.0,执行
+38012579353,build-windows,Cache upstream MSIX,success,36.0,准备/收尾
+38012579353,build-windows,Sync upstream Windows app,success,38.0,准备/收尾
+38012579353,build-windows,Read packaged app and CLI versions,success,1.0,执行
+38012579353,build-windows,Check existing app-version release,success,1.0,执行
+38012579353,build-windows,Patch app,success,28.0,执行
+38012579353,build-windows,Build Windows zip,success,120.0,执行
+38012579353,build-windows,Build Windows update zip,success,53.0,执行
+38012579353,build-windows,Create checksums,success,4.0,执行
+38012579353,build-windows,Publish release,success,43.0,执行
+38012579353,build-windows,Post Cache upstream MSIX,success,97.0,准备/收尾
+38012579353,build-windows,Post Setup Node.js,success,0,准备/收尾
+38012579353,build-windows,Post Checkout,success,3.0,准备/收尾
+38012579353,build-windows,Complete job,success,0,准备/收尾
+37877571113,build-windows,Set up job,success,0,准备/收尾
+37877571113,build-windows,Checkout,success,5.0,准备/收尾
+37877571113,build-windows,Setup Node.js,success,15.0,准备/收尾
+37877571113,build-windows,Install dependencies,success,33.0,准备/收尾
+37877571113,build-windows,Ensure 7-Zip alias,success,1.0,准备/收尾
+37877571113,build-windows,Early skip check,success,7.0,执行
+37877571113,build-windows,Cache upstream MSIX,success,33.0,准备/收尾
+37877571113,build-windows,Sync upstream Windows app,success,29.0,准备/收尾
+37877571113,build-windows,Read packaged app and CLI versions,success,4.0,执行
+37877571113,build-windows,Check existing app-version release,success,1.0,执行
+37877571113,build-windows,Patch app,success,27.0,执行
+37877571113,build-windows,Build Windows zip,success,125.0,执行
+37877571113,build-windows,Create checksums,success,4.0,执行
+37877571113,build-windows,Publish release,success,25.0,执行
+37877571113,build-windows,Post Cache upstream MSIX,success,1.0,准备/收尾
+37877571113,build-windows,Post Setup Node.js,success,0,准备/收尾
+37877571113,build-windows,Post Checkout,success,2.0,准备/收尾
+37877571113,build-windows,Complete job,success,0,准备/收尾
+37720327745,build-windows,Set up job,success,0,准备/收尾
+37720327745,build-windows,Checkout,success,5.0,准备/收尾
+37720327745,build-windows,Setup Node.js,success,18.0,准备/收尾
+37720327745,build-windows,Install dependencies,success,29.0,准备/收尾
+37720327745,build-windows,Ensure 7-Zip alias,success,1.0,准备/收尾
+37720327745,build-windows,Early skip check,success,6.0,执行
+37720327745,build-windows,Cache upstream MSIX,success,19.0,准备/收尾
+37720327745,build-windows,Sync upstream Windows app,success,33.0,准备/收尾
+37720327745,build-windows,Read packaged app and CLI versions,success,1.0,执行
+37720327745,build-windows,Check existing app-version release,success,1.0,执行
+37720327745,build-windows,Patch app,success,27.0,执行
+37720327745,build-windows,Build Windows zip,success,116.0,执行
+37720327745,build-windows,Create checksums,success,4.0,执行
+37720327745,build-windows,Publish release,success,29.0,执行
+37720327745,build-windows,Post Cache upstream MSIX,success,22.0,准备/收尾
+37720327745,build-windows,Post Setup Node.js,success,0,准备/收尾
+37720327745,build-windows,Post Checkout,success,2.0,准备/收尾
+37720327745,build-windows,Complete job,success,0,准备/收尾

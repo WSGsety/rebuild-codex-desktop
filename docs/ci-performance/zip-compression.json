@@ -1,0 +1,43 @@
+{
+  "tool": "7-Zip 26.05 arm64",
+  "app": "26.1103.31037",
+  "msix": "26.1103.3517.0",
+  "cli": "0.167.0",
+  "results": [
+    {
+      "level": 1,
+      "seconds": 17.056,
+      "bytes": 1065221657,
+      "entries": 4284,
+      "content_matches": true
+    },
+    {
+      "level": 5,
+      "seconds": 70.56,
+      "bytes": 1015188306,
+      "entries": 4284,
+      "content_matches": true
+    },
+    {
+      "level": 7,
+      "seconds": 222.362,
+      "timing": "archive_write_window",
+      "bytes": 1007940577,
+      "entries": 4284,
+      "content_matches": true
+    },
+    {
+      "level": "5-fb128-pass1",
+      "seconds": 88.371,
+      "bytes": 1011978465,
+      "entries": 4284,
+      "content_matches": true
+    }
+  ],
+  "ultra": {
+    "level": 9,
+    "status": "aborted",
+    "elapsed_at_least_seconds": 267.3,
+    "reason": "超过平衡档可接受的耗时，未报告未完成 ZIP 的体积"
+  }
+}
