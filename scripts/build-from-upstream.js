@@ -157,7 +157,9 @@ function resolveWindowsCodexBundle(version) {
   clearDir(tempDir);
 
   console.log(`   [codex] fetching ${packageSpec}`);
-  const packed = JSON.parse(execNpm(["pack", packageSpec, "--pack-destination", tempDir, "--json"], {
+  // CLI 大包只在本轮使用，避免污染 setup-node 的小型工具依赖缓存。
+  const packed = JSON.parse(execNpm(["pack", packageSpec, "--pack-destination", tempDir,
+    "--cache", path.join(tempDir, "npm-cache"), "--json"], {
     cwd: tempDir,
     encoding: "utf-8",
     stdio: ["ignore", "pipe", "pipe"],
