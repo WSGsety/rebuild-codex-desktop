@@ -3,7 +3,7 @@
  * check-windows-skip.js — 每日构建的轻量前置探测
  *
  * 只查商店元数据（SOAP，不下载 MSIX）+ npm 最新 CLI 版本 + 已有 Release
- * 说明里的版本标记。若已有 Release 同时匹配当前 MSIX 包版本与 CLI 版本，
+ * 说明里的版本标记。若已有 Release 同时匹配当前 MSIX 包版本与 CLI 版本，且有 7z 及校验文件，
  * 整轮构建直接跳过，无变更日不再触碰商店 CDN。
  *
  * 用法（CI 中）:
@@ -36,11 +36,15 @@ function releaseVersions(body) {
 function evaluateSkip(releases, msixVersion, cliVersion) {
   return (releases || []).some((release) => {
     const versions = releaseVersions(release.body);
-    // 发布流程在校验完资产后才写入版本标记，资产数兜底防止后续被手动删空。
+    const assets = new Set((release.assets || []).map((asset) => asset.name));
+    // 只匹配当前格式的完整资产，旧 ZIP 不能阻止迁移后的首次 7z 发布。
     return !!versions &&
       versions.msix === msixVersion &&
       versions.cli === cliVersion &&
-      (release.assets || []).length >= 2;
+      release.tag_name?.startsWith("v") &&
+      release.tag_name.endsWith(`-cli-${cliVersion}`) &&
+      assets.has(`Codex-win-x64-${release.tag_name.slice(1)}.7z`) &&
+      assets.has("SHA256SUMS.txt");
   });
 }
 

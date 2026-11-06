@@ -5,7 +5,7 @@ const os = require("node:os");
 const path = require("node:path");
 const {
   WINDOWS_CODEX_FILES,
-  createWindowsZipName,
+  createWindowsArchiveName,
   parseWindowsApplicationExecutable,
   writeWindowsLauncher,
 } = require("./build-from-upstream");
@@ -87,10 +87,10 @@ test("Windows 产物名同时展示 App 与 CLI 版本", () => {
   const codexCliVersion = "0.128.0";
 
   // Act
-  const name = createWindowsZipName(appVersion, codexCliVersion);
+  const name = createWindowsArchiveName(appVersion, codexCliVersion);
 
   // Assert
-  assert.equal(name, "Codex-win-x64-26.707.31428-cli-0.128.0.zip");
+  assert.equal(name, "Codex-win-x64-26.707.31428-cli-0.128.0.7z");
 });
 
 test("官方 Windows CLI 包使用完整的四文件映射", () => {

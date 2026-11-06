@@ -252,8 +252,8 @@ function getWindowsPackageVersion() {
   return version;
 }
 
-function createWindowsZipName(appVersion, codexCliVersion) {
-  return `Codex-win-x64-${appVersion}-cli-${codexCliVersion}.zip`;
+function createWindowsArchiveName(appVersion, codexCliVersion) {
+  return `Codex-win-x64-${appVersion}-cli-${codexCliVersion}.7z`;
 }
 
 function resolveCodexVendor(platform) {
@@ -416,17 +416,17 @@ async function buildWin(platform) {
   const appVersion = getVersion(asarDir);
   const windowsPackageVersion = getWindowsPackageVersion();
   const cliVersion = resolveWindowsCodexVersion();
-  const zipName = createWindowsZipName(appVersion, cliVersion);
-  const zipPath = path.join(OUT_DIR, zipName);
+  const archiveName = createWindowsArchiveName(appVersion, cliVersion);
+  const archivePath = path.join(OUT_DIR, archiveName);
   const stamp = path.join(OUT_DIR, ".windows-build.json");
-  // CI 每次从干净输出构建；本地重复构建校验全部源文件及 ZIP 后才复用。
+  // CI 每次从干净输出构建；本地重复构建校验全部源文件及归档后才复用。
   const input = process.env.CI ? null : fingerprint([
     appDir, asarDir, path.join(extractDir, "AppxManifest.xml"),
     __filename, require.resolve("./build-cache"),
     path.join(__dirname, "package-lock.json"), path.join(PROJECT_ROOT, "package-lock.json"),
   ], JSON.stringify([windowsPackageVersion, cliVersion, process.platform, process.arch, process.version]));
-  if (input && isBuildCurrent(stamp, input, zipPath)) {
-    console.log(`   [cache] verified unchanged inputs and ZIP: ${zipPath}`);
+  if (input && isBuildCurrent(stamp, input, archivePath)) {
+    console.log(`   [cache] verified unchanged inputs and archive: ${archivePath}`);
     return;
   }
 
@@ -472,7 +472,7 @@ async function buildWin(platform) {
   const codexBundle = replaceWindowsCodexBundle(resourcesDir, cliVersion);
   writeWindowsLauncher(outApp, entryRelativePath);
 
-  // Create ZIP
+  // 生成 7z 全量包
   fs.writeFileSync(path.join(outApp, "build-info.json"), JSON.stringify({
     appVersion,
     windowsPackageVersion,
@@ -482,13 +482,14 @@ async function buildWin(platform) {
     codexPackageIntegrity: codexBundle.integrity,
     codexExecutableSha256: codexBundle.hashes,
   }, null, 2) + "\n");
-  fs.rmSync(zipPath, { force: true });
-  console.log(`   [zip] ${zipName}`);
-  execSync(`7zz a -tzip -mx=5 "${zipPath}" .`, { cwd: outApp });
-  if (input) saveBuild(stamp, input, zipPath);
+  fs.rmSync(archivePath, { force: true });
+  console.log(`   [7z] ${archiveName}`);
+  execSync(`7zz a -t7z -m0=lzma2 -mx=5 -ms=on "${archivePath}" .`, { cwd: outApp });
+  execFileSync("7zz", ["t", archivePath], { stdio: "inherit" });
+  if (input) saveBuild(stamp, input, archivePath);
 
-  const sizeMB = (fs.statSync(zipPath).size / 1048576).toFixed(1);
-  console.log(`   [ok] ${zipPath} (${sizeMB} MB)`);
+  const sizeMiB = (fs.statSync(archivePath).size / 1048576).toFixed(1);
+  console.log(`   [ok] ${archivePath} (${sizeMiB} MiB)`);
 }
 
 // ─── ASAR integrity ─────────────────────────────────────────────
@@ -578,7 +579,7 @@ if (require.main === module) {
 
 module.exports = {
   WINDOWS_CODEX_FILES,
-  createWindowsZipName,
+  createWindowsArchiveName,
   parseWindowsApplicationExecutable,
   writeWindowsLauncher,
 };
