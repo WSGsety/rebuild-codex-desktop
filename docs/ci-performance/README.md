@@ -40,3 +40,11 @@ actionlint 1.7.12 的预编译二进制及 SHA256 已验证。该版本尚不认
 ## 线上复测
 
 第一轮：[42241276792](https://github.com/WSGsety/rebuild-codex-desktop/actions/runs/42241276792) 成功，Windows 依赖安装 4 秒，MSIX 保存 6 秒。第二轮正在验证快速压缩和缓存命中，最终数字在完成后补齐。测试分支不发布或覆盖正式 Release。
+
+## 缓存复查与配置依据
+
+第二轮发现 `npm pack` 把预编译 CLI 加入了 setup-node 的 npm 缓存，Windows 缓存膨胀至 182,241,805 字节，两轮 CLI 准备仍各约 9 秒。因此将该下载放入本轮临时缓存，让依赖缓存只保留 17 个工具包。已清理两个不再需要的旧 MSIX 缓存，共 4,969,892,599 字节；当前 main 仍在使用的最新旧格式缓存暂时保留，避免影响未合并前的定时任务。
+
+配置依据：[GitHub 并发及 queue](https://docs.github.com/en/actions/how-tos/write-workflows/choose-when-workflows-run/control-workflow-concurrency)、[路径跳过与 Pending 检查](https://docs.github.com/en/actions/how-tos/manage-workflow-runs/skip-workflow-runs)、[setup-node 缓存说明](https://github.com/actions/setup-node)。
+
+未改动根目录开发依赖版本。工具依赖审计仍报告 3 项 moderate（ASAR 的 glob/minimatch 传递依赖），未提供直接修复；本次未扩大为依赖升级任务。生产 Release 上传覆盖及 macOS DMG 构建不在本次分支实测范围。
