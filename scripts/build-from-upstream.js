@@ -16,6 +16,7 @@ const crypto = require("crypto");
 const os = require("os");
 const { execFileSync, execSync } = require("child_process");
 const { XMLParser } = require("fast-xml-parser");
+const { fingerprint, isBuildCurrent, saveBuild } = require("./build-cache");
 
 const PROJECT_ROOT = path.resolve(__dirname, "..");
 const SRC_DIR = path.join(PROJECT_ROOT, "src");
@@ -150,8 +151,7 @@ function sha256File(filePath) {
   return crypto.createHash("sha256").update(fs.readFileSync(filePath)).digest("hex");
 }
 
-function resolveWindowsCodexBundle() {
-  const version = resolveWindowsCodexVersion();
+function resolveWindowsCodexBundle(version) {
   const packageSpec = `@openai/codex@${version}-win32-x64`;
   const tempDir = path.join(os.tmpdir(), "openai-codex-pack", `${version}-win32-x64`);
   clearDir(tempDir);
@@ -199,13 +199,13 @@ function resolveWindowsCodexBundle() {
   return { version, integrity: packageInfo.integrity, files };
 }
 
-function replaceWindowsCodexBundle(resourcesDir) {
+function replaceWindowsCodexBundle(resourcesDir, version) {
   const existingCodex = path.join(resourcesDir, "codex.exe");
   if (!fs.existsSync(existingCodex)) {
     throw new Error(`Upstream Codex executable is missing: ${existingCodex}`);
   }
 
-  const bundle = resolveWindowsCodexBundle();
+  const bundle = resolveWindowsCodexBundle(version);
   const hashes = {};
   for (const { sourcePath, destination } of bundle.files) {
     const destinationPath = path.join(resourcesDir, destination);
@@ -307,7 +307,7 @@ function resolveCodexVendor(platform) {
 
 // ─── macOS build ────────────────────────────────────────────────
 
-function buildMac(platform) {
+async function buildMac(platform) {
   const platformDir = path.join(SRC_DIR, platform);
   const asarDir = path.join(platformDir, "_asar");
 
@@ -353,7 +353,7 @@ function buildMac(platform) {
   // 3. Repack patched ASAR
   const asarPath = path.join(resourcesDir, "app.asar");
   console.log("   [asar pack] _asar/ -> app.asar");
-  execSync(`npx asar pack "${asarDir}" "${asarPath}"`);
+  await (await import("@electron/asar")).createPackage(asarDir, asarPath);
 
   // 4. Update ASAR integrity hash in Info.plist
   const infoPlist = path.join(outApp, "Contents", "Info.plist");
@@ -390,7 +390,7 @@ function buildMac(platform) {
 
 // ─── Windows build ──────────────────────────────────────────────
 
-function buildWin(platform) {
+async function buildWin(platform) {
   const platformDir = path.join(SRC_DIR, platform);
   const asarDir = path.join(platformDir, "_asar");
 
@@ -411,6 +411,23 @@ function buildWin(platform) {
   const entryRelativePath = getWindowsEntryRelativePath(extractDir, appDir);
   console.log(`   [entry] ${entryRelativePath}`);
 
+  const appVersion = getVersion(asarDir);
+  const windowsPackageVersion = getWindowsPackageVersion();
+  const cliVersion = resolveWindowsCodexVersion();
+  const zipName = createWindowsZipName(appVersion, cliVersion);
+  const zipPath = path.join(OUT_DIR, zipName);
+  const stamp = path.join(OUT_DIR, ".windows-build.json");
+  // CI 每次从干净输出构建；本地重复构建校验全部源文件及 ZIP 后才复用。
+  const input = process.env.CI ? null : fingerprint([
+    appDir, asarDir, path.join(extractDir, "AppxManifest.xml"),
+    __filename, require.resolve("./build-cache"),
+    path.join(__dirname, "package-lock.json"),
+  ], JSON.stringify([windowsPackageVersion, cliVersion, process.platform, process.arch, process.version]));
+  if (input && isBuildCurrent(stamp, input, zipPath)) {
+    console.log(`   [cache] verified unchanged inputs and ZIP: ${zipPath}`);
+    return;
+  }
+
   // Copy app/ to output
   const outAppDir = path.join(OUT_DIR, "win");
   clearDir(outAppDir);
@@ -430,7 +447,7 @@ function buildWin(platform) {
 
   // Repack patched ASAR
   console.log("   [asar pack] _asar/ -> app.asar");
-  execSync(`npx asar pack "${asarDir}" "${asarPath}"`);
+  await (await import("@electron/asar")).createPackage(asarDir, asarPath);
 
   // Compute new hash and patch exe
   const newHash = computeAsarHeaderHash(asarPath);
@@ -450,14 +467,10 @@ function buildWin(platform) {
   }
 
   // Replace Codex CLI and its matching Windows helpers.
-  const codexBundle = replaceWindowsCodexBundle(resourcesDir);
+  const codexBundle = replaceWindowsCodexBundle(resourcesDir, cliVersion);
   writeWindowsLauncher(outApp, entryRelativePath);
 
   // Create ZIP
-  const appVersion = getVersion(asarDir);
-  const windowsPackageVersion = getWindowsPackageVersion();
-  const zipName = createWindowsZipName(appVersion, codexBundle.version);
-  const zipPath = path.join(OUT_DIR, zipName);
   fs.writeFileSync(path.join(outApp, "build-info.json"), JSON.stringify({
     appVersion,
     windowsPackageVersion,
@@ -470,6 +483,7 @@ function buildWin(platform) {
   fs.rmSync(zipPath, { force: true });
   console.log(`   [zip] ${zipName}`);
   execSync(`7zz a -tzip -mx=5 "${zipPath}" .`, { cwd: outApp });
+  if (input) saveBuild(stamp, input, zipPath);
 
   const sizeMB = (fs.statSync(zipPath).size / 1048576).toFixed(1);
   console.log(`   [ok] ${zipPath} (${sizeMB} MB)`);
@@ -536,7 +550,7 @@ function getVersion(asarDir) {
 
 // ─── Main ───────────────────────────────────────────────────────
 
-function main() {
+async function main() {
   const args = process.argv.slice(2);
   const platIdx = args.indexOf("--platform");
   const platform = platIdx !== -1 ? args[platIdx + 1] : null;
@@ -550,13 +564,15 @@ function main() {
   fs.mkdirSync(OUT_DIR, { recursive: true });
 
   if (platform.startsWith("mac")) {
-    buildMac(platform);
+    await buildMac(platform);
   } else {
-    buildWin(platform);
+    await buildWin(platform);
   }
 }
 
-if (require.main === module) main();
+if (require.main === module) {
+  main().catch((error) => { console.error(error); process.exitCode = 1; });
+}
 
 module.exports = {
   WINDOWS_CODEX_FILES,

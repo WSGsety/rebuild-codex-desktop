@@ -1,6 +1,9 @@
 name: Build Codex Desktop for Windows
 
 on:
+  push:
+    branches: [main]
+  pull_request:
   schedule:
     # 单档 UTC 21:43（北京 05:43）。schedule 调度队列在 UTC 午夜前后实测积压
     # 2~3.6 小时（cron 23:43 时实际创建 run 在 01:39~03:20 UTC），整体前移后
@@ -19,17 +22,62 @@ on:
         default: false
 
 permissions:
-  contents: write
+  contents: read
 
 env:
   NODE_VERSION: "24"
 
 concurrency:
-  group: codex-desktop-windows-release
-  cancel-in-progress: false
+  # main 每次运行使用独立组，避免默认并发组替换等待中的提交。
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.run_id }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
+  preflight:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    outputs:
+      build: ${{ steps.early.outputs.skip == 'false' }}
+      msix_version: ${{ steps.early.outputs.msix_version }}
+      cli_version: ${{ steps.early.outputs.cli_version }}
+    steps:
+      - uses: actions/checkout@v5
+      # 不在 workflow 级使用 paths-ignore，保证文档 PR 的必需检查也能结束。
+      - name: Detect code changes
+        id: changes
+        run: node scripts/ci-changes.js
+      - name: Setup Node.js
+        if: steps.changes.outputs.run == 'true'
+        uses: actions/setup-node@v5
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+          cache-dependency-path: scripts/package-lock.json
+      - name: Install packaging dependencies
+        if: steps.changes.outputs.run == 'true'
+        run: npm ci --prefix scripts --ignore-scripts
+      - name: Test packaging scripts
+        if: steps.changes.outputs.run == 'true'
+        run: npm test
+      - name: Early skip check
+        if: steps.changes.outputs.run == 'true'
+        id: early
+        env:
+          GH_TOKEN: ${{ github.token }}
+          # 代码提交必须完整打包验证，只有定时/手动发版可以按版本跳过。
+          FORCE_BUILD: ${{ inputs.force_build || github.event_name == 'push' || github.event_name == 'pull_request' }}
+        run: node scripts/check-windows-skip.js
+
   build-windows:
+    needs: preflight
+    if: needs.preflight.outputs.build == 'true'
+    permissions:
+      contents: write
+    # 发版串行且保留等待队列；普通验证运行各自独立。
+    concurrency:
+      group: windows-${{ github.ref == 'refs/heads/main' && (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') && 'release' || github.run_id }}
+      cancel-in-progress: false
+      queue: max
     runs-on: windows-latest
     timeout-minutes: 30
     steps:
@@ -41,9 +89,10 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: npm
+          cache-dependency-path: scripts/package-lock.json
 
-      - name: Install dependencies
-        run: npm ci
+      - name: Install packaging dependencies
+        run: npm ci --prefix scripts --ignore-scripts
 
       - name: Ensure 7-Zip alias
         run: |
@@ -51,29 +100,14 @@ jobs:
           Copy-Item "C:\Program Files\7-Zip\7z.exe" "C:\Program Files\7-Zip\7zz.exe"
           echo "C:\Program Files\7-Zip" | Out-File -Append -Encoding utf8 $env:GITHUB_PATH
 
-      - name: Test packaging scripts
-        run: npm test
-
-      # 轻量探测：只查商店元数据 + npm CLI 版本 + Release 标记，不下载 MSIX。
-      # 版本都没变时本轮直接跳过，无变更日不再触碰商店 CDN。
-      - name: Early skip check
-        id: early
-        env:
-          GH_TOKEN: ${{ github.token }}
-          FORCE_BUILD: ${{ inputs.force_build }}
-        run: node scripts/check-windows-skip.js
-
       - name: Cache upstream MSIX
-        if: steps.early.outputs.skip == 'false'
         uses: actions/cache@v5
         with:
-          path: ${{ runner.temp }}/codex-sync
-          key: codex-msix-${{ steps.early.outputs.msix_version }}
-          restore-keys: |
-            codex-msix-
+          # 只保存当前压缩包，不保存随后会被清空的解压目录或旧版本。
+          path: ${{ runner.temp }}/codex-sync/*.msix
+          key: codex-msix-archive-v1-${{ needs.preflight.outputs.msix_version }}
 
       - name: Sync upstream Windows app
-        if: steps.early.outputs.skip == 'false'
         env:
           # runner.temp 与 node os.tmpdir() 默认不一致（D:\a\_temp vs C:\Users\...\Temp），
           # 统一后下载与 actions/cache 才能落在同一目录
@@ -82,13 +116,12 @@ jobs:
         run: node scripts/sync-upstream.js --force --skip-mac
 
       - name: Read packaged app and CLI versions
-        if: steps.early.outputs.skip == 'false'
         id: version
         shell: bash
         run: |
           APP_VERSION=$(node -e "const fs=require('fs');const p='src/win/_asar/package.json';const pkg=JSON.parse(fs.readFileSync(p,'utf8'));process.stdout.write(pkg.version||'')")
           WIN_PACKAGE_VERSION=$(node -e "const fs=require('fs');const p='scripts/.versions.json';const v=JSON.parse(fs.readFileSync(p,'utf8'));process.stdout.write(v.win?.version||'')")
-          CODEX_CLI_VERSION=$(npm view @openai/codex version --json | node -e "let d='';process.stdin.on('data',c=>d+=c);process.stdin.on('end',()=>process.stdout.write(JSON.parse(d)))")
+          CODEX_CLI_VERSION="${{ needs.preflight.outputs.cli_version }}"
           if [ -z "$APP_VERSION" ] || [ -z "$WIN_PACKAGE_VERSION" ] || [ -z "$CODEX_CLI_VERSION" ]; then
             echo "No complete Windows app and Codex CLI version set detected"
             exit 1
@@ -101,7 +134,6 @@ jobs:
 
       - name: Check existing app-version release
         id: existing
-        if: steps.early.outputs.skip == 'false'
         shell: bash
         env:
           GH_TOKEN: ${{ github.token }}
@@ -135,7 +167,7 @@ jobs:
           else
             echo "skip=false" >> "$GITHUB_OUTPUT"
           fi
-          if [ "${{ inputs.force_build }}" = "true" ]; then
+          if [ "${{ inputs.force_build || github.event_name == 'push' || github.event_name == 'pull_request' }}" = "true" ]; then
             echo "skip=false" >> "$GITHUB_OUTPUT"
             echo "force_build requested; rebuilding"
           fi
@@ -164,7 +196,7 @@ jobs:
           sha256sum "$ZIP_NAME" > SHA256SUMS.txt
 
       - name: Publish release
-        if: steps.existing.outputs.skip == 'false'
+        if: steps.existing.outputs.skip == 'false' && github.ref == 'refs/heads/main' && (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch')
         shell: bash
         env:
           GH_TOKEN: ${{ github.token }}
@@ -207,3 +239,22 @@ jobs:
           printf '<!-- codex-cli-version:%s --><!-- msix-version:%s -->\n' \
             "$CODEX_CLI_VERSION" "$WIN_PACKAGE_VERSION" >> "$RELEASE_NOTES_PATH"
           gh release edit "$TAG" --title "$TAG" --notes-file "$RELEASE_NOTES_PATH"
+
+  ci:
+    name: CI
+    if: always()
+    needs: [preflight, build-windows]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Require successful checks
+        env:
+          PREFLIGHT: ${{ needs.preflight.result }}
+          BUILD_REQUIRED: ${{ needs.preflight.outputs.build }}
+          BUILD: ${{ needs.build-windows.result }}
+        run: |
+          test "$PREFLIGHT" = success
+          if [ "$BUILD_REQUIRED" = true ]; then
+            test "$BUILD" = success
+          else
+            test "$BUILD" = skipped
+          fi

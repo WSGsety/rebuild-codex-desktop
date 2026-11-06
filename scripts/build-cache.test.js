@@ -1,0 +1,38 @@
+const test = require("node:test");
+const assert = require("node:assert/strict");
+const fs = require("node:fs");
+const os = require("node:os");
+const path = require("node:path");
+const { fingerprint, isBuildCurrent, saveBuild } = require("./build-cache");
+
+test("仅在输入和产物内容均未变时复用构建", (t) => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "codex-build-cache-"));
+  t.after(() => fs.rmSync(root, { recursive: true, force: true }));
+  const src = path.join(root, "src");
+  fs.mkdirSync(src);
+  const source = path.join(src, "app.js");
+  const artifact = path.join(root, "app.zip");
+  const stamp = path.join(root, "stamp.json");
+  fs.writeFileSync(source, "one");
+  fs.writeFileSync(artifact, "zip");
+  const input = fingerprint([src], "cli-1");
+  assert.equal(isBuildCurrent(stamp, input, artifact), false);
+  saveBuild(stamp, input, artifact);
+  assert.equal(isBuildCurrent(stamp, input, artifact), true);
+  assert.notEqual(fingerprint([src], "cli-2"), input);
+  const time = fs.statSync(source).mtime;
+  fs.writeFileSync(source, "two");
+  fs.utimesSync(source, time, time);
+  assert.equal(isBuildCurrent(stamp, fingerprint([src], "cli-1"), artifact), false);
+  fs.writeFileSync(source, "one");
+  assert.equal(fingerprint([src], "cli-1"), input);
+  fs.writeFileSync(path.join(src, "new.js"), "new");
+  assert.notEqual(fingerprint([src], "cli-1"), input);
+  fs.unlinkSync(path.join(src, "new.js"));
+  fs.writeFileSync(artifact, "bad");
+  assert.equal(isBuildCurrent(stamp, input, artifact), false);
+  fs.unlinkSync(artifact);
+  assert.equal(isBuildCurrent(stamp, input, artifact), false);
+  fs.writeFileSync(stamp, "{");
+  assert.equal(isBuildCurrent(stamp, input, artifact), false);
+});
