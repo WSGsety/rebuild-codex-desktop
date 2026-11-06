@@ -126,6 +126,10 @@ jobs:
             echo "No complete Windows app and Codex CLI version set detected"
             exit 1
           fi
+          if [ "$WIN_PACKAGE_VERSION" != "${{ needs.preflight.outputs.msix_version }}" ]; then
+            echo "Store version changed during build; retry to avoid saving under the wrong cache key"
+            exit 1
+          fi
           echo "app_version=$APP_VERSION" >> "$GITHUB_OUTPUT"
           echo "win_package_version=$WIN_PACKAGE_VERSION" >> "$GITHUB_OUTPUT"
           echo "codex_cli_version=$CODEX_CLI_VERSION" >> "$GITHUB_OUTPUT"
@@ -141,6 +145,10 @@ jobs:
           CODEX_CLI_VERSION: ${{ steps.version.outputs.codex_cli_version }}
           ZIP_NAME: ${{ steps.version.outputs.zip_name }}
         run: |
+          if [ "${{ inputs.force_build || github.event_name == 'push' || github.event_name == 'pull_request' }}" = "true" ]; then
+            echo "skip=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
           EXISTING_RELEASE="$(
             gh api "repos/$GITHUB_REPOSITORY/releases?per_page=100" | node -e '
               const { CODEX_CLI_VERSION: cli, TAG: tag, ZIP_NAME: zip } = process.env;
@@ -166,10 +174,6 @@ jobs:
             echo "$ZIP_NAME already exists in $EXISTING_RELEASE"
           else
             echo "skip=false" >> "$GITHUB_OUTPUT"
-          fi
-          if [ "${{ inputs.force_build || github.event_name == 'push' || github.event_name == 'pull_request' }}" = "true" ]; then
-            echo "skip=false" >> "$GITHUB_OUTPUT"
-            echo "force_build requested; rebuilding"
           fi
 
       - name: Patch app

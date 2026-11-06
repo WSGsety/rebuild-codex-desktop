@@ -421,7 +421,7 @@ async function buildWin(platform) {
   const input = process.env.CI ? null : fingerprint([
     appDir, asarDir, path.join(extractDir, "AppxManifest.xml"),
     __filename, require.resolve("./build-cache"),
-    path.join(__dirname, "package-lock.json"),
+    path.join(__dirname, "package-lock.json"), path.join(PROJECT_ROOT, "package-lock.json"),
   ], JSON.stringify([windowsPackageVersion, cliVersion, process.platform, process.arch, process.version]));
   if (input && isBuildCurrent(stamp, input, zipPath)) {
     console.log(`   [cache] verified unchanged inputs and ZIP: ${zipPath}`);
@@ -482,7 +482,8 @@ async function buildWin(platform) {
   }, null, 2) + "\n");
   fs.rmSync(zipPath, { force: true });
   console.log(`   [zip] ${zipName}`);
-  execSync(`7zz a -tzip -mx=5 "${zipPath}" .`, { cwd: outApp });
+  // 实包对照：快速 Deflate 保持内容一致，体积约增 5%，压缩耗时显著下降。
+  execSync(`7zz a -tzip -mx=1 "${zipPath}" .`, { cwd: outApp });
   if (input) saveBuild(stamp, input, zipPath);
 
   const sizeMB = (fs.statSync(zipPath).size / 1048576).toFixed(1);

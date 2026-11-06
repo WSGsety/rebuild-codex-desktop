@@ -80,7 +80,7 @@ async function main() {
 
   const win = await getWindowsVersion();
   const cli = npmLatestCodexVersion();
-  const releases = fetchReleases();
+  const releases = force ? [] : fetchReleases();
   const skip = !force && evaluateSkip(releases, win.version, cli);
 
   console.log(`   [probe] msix=${win.version} cli=${cli} releases=${releases.length}`);
