@@ -13,7 +13,7 @@ Codex-win-x64-<App版本>-cli-<CLI版本>.7z
 SHA256SUMS.txt
 ```
 
-首次安装和更新都使用全量 7z：使用 [7-Zip](https://www.7-zip.org/) 或兼容工具完整解压到新目录，运行 `ChatGPT.exe`（或 `启动 Codex.cmd`）即可使用。本地版本可以查看程序目录的 `build-info.json`；跳过多个版本时直接下载最新版全量包，无需按顺序补装历史版本。
+首次安装和更新都使用全量 7z：使用 [7-Zip](https://www.7-zip.org/) 或兼容工具完整解压到新目录，运行 `ChatGPT.exe` 即可使用。本地版本可以查看程序目录的 `build-info.json`；跳过多个版本时直接下载最新版全量包，无需按顺序补装历史版本。
 
 `SHA256SUMS.txt` 列出该 Release 全量 7z 的校验值。包内实际桌面宿主由 Microsoft Store 包的 `AppxManifest.xml` 决定。
 

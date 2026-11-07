@@ -213,7 +213,7 @@ jobs:
           RELEASE_NOTES_PATH="$RUNNER_TEMP/codex-release-notes.txt"
           printf '基于 Microsoft Store Windows x64 安装包 %s 重新打包，App 版本为 %s，内含 Codex CLI %s。\n\n' \
             "$WIN_PACKAGE_VERSION" "$APP_VERSION" "$CODEX_CLI_VERSION" > "$RELEASE_NOTES_PATH"
-          printf '**全量包**：`%s`。使用 7-Zip 或兼容工具完整解压到新目录，运行 `启动 Codex.cmd` 或 `ChatGPT.exe`。\n\n' "$ARCHIVE_NAME" >> "$RELEASE_NOTES_PATH"
+          printf '**全量包**：`%s`。使用 7-Zip 或兼容工具完整解压到新目录，运行 `ChatGPT.exe`。\n\n' "$ARCHIVE_NAME" >> "$RELEASE_NOTES_PATH"
           printf '**校验**：附件 `SHA256SUMS.txt` 列出全量 7z 的校验值。请以当前 Release 的附件为准。\n\n' >> "$RELEASE_NOTES_PATH"
           FILES=("out/$ARCHIVE_NAME" out/SHA256SUMS.txt)
           if gh release view "$TAG" >/dev/null 2>&1; then

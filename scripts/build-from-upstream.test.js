@@ -1,13 +1,9 @@
 const test = require("node:test");
 const assert = require("node:assert/strict");
-const fs = require("node:fs");
-const os = require("node:os");
-const path = require("node:path");
 const {
   WINDOWS_CODEX_FILES,
   createWindowsArchiveName,
   parseWindowsApplicationExecutable,
-  writeWindowsLauncher,
 } = require("./build-from-upstream");
 
 test("优先读取 Windows FullTrust 应用入口", () => {
@@ -107,17 +103,4 @@ test("官方 Windows CLI 包使用完整的四文件映射", () => {
 
   // Assert
   assert.deepEqual(actual, expected);
-});
-
-test("旧版 Codex.exe 入口也生成统一启动脚本", (context) => {
-  // Arrange
-  const outputDir = fs.mkdtempSync(path.join(os.tmpdir(), "codex-launcher-test-"));
-  context.after(() => fs.rmSync(outputDir, { recursive: true, force: true }));
-
-  // Act
-  writeWindowsLauncher(outputDir, "Codex.exe");
-
-  // Assert
-  const launcher = fs.readFileSync(path.join(outputDir, "启动 Codex.cmd"), "utf-8");
-  assert.equal(launcher, '@echo off\r\nstart "" "%~dp0Codex.exe" "codex://launch"\r\n');
 });

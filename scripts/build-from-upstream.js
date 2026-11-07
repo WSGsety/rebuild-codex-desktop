@@ -103,13 +103,6 @@ function getWindowsEntryRelativePath(extractDir, appDir) {
   return relativePath;
 }
 
-function writeWindowsLauncher(outApp, entryRelativePath) {
-  const windowsPath = entryRelativePath.split(path.sep).join("\\");
-  const launcher = `@echo off\r\nstart "" "%~dp0${windowsPath}" "codex://launch"\r\n`;
-  fs.writeFileSync(path.join(outApp, "启动 Codex.cmd"), launcher);
-  console.log(`   [entry] 启动 Codex.cmd -> ${entryRelativePath}`);
-}
-
 function execNpm(args, options) {
   if (process.env.npm_execpath) {
     return execFileSync(process.execPath, [process.env.npm_execpath, ...args], options);
@@ -470,7 +463,6 @@ async function buildWin(platform) {
 
   // Replace Codex CLI and its matching Windows helpers.
   const codexBundle = replaceWindowsCodexBundle(resourcesDir, cliVersion);
-  writeWindowsLauncher(outApp, entryRelativePath);
 
   // 生成 7z 全量包
   fs.writeFileSync(path.join(outApp, "build-info.json"), JSON.stringify({
@@ -581,5 +573,4 @@ module.exports = {
   WINDOWS_CODEX_FILES,
   createWindowsArchiveName,
   parseWindowsApplicationExecutable,
-  writeWindowsLauncher,
 };
